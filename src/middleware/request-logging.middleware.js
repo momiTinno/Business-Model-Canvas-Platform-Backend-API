@@ -2,7 +2,7 @@ import { generate } from "../utils/uuid.util.js";
 
 export const requestLoggingMiddleware = (request, response, next) => {
   const startedAt = performance.now();
-  request.correlationId = request.get("X-Request-Id") || generate();
+  request.correlationId = generate();
   response.set("X-Request-Id", request.correlationId);
   response.on("finish", () => {
     console.info({
