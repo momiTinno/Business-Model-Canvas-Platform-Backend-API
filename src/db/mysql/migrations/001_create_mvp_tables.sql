@@ -1,0 +1,57 @@
+CREATE TABLE IF NOT EXISTS users (
+  id CHAR(36) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  disabled BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  UNIQUE KEY uq_users_email (email)
+);
+
+CREATE TABLE IF NOT EXISTS canvas (
+  id CHAR(36) PRIMARY KEY,
+  code VARCHAR(100) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  created_by CHAR(36) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_by CHAR(36) NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  UNIQUE KEY uq_canvas_code (code)
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  id CHAR(36) PRIMARY KEY,
+  canvas_id CHAR(36) NOT NULL,
+  code VARCHAR(100) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  created_by CHAR(36) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_by CHAR(36) NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  CONSTRAINT fk_categories_canvas FOREIGN KEY (canvas_id) REFERENCES canvas(id),
+  UNIQUE KEY uq_categories_canvas_code (canvas_id, code),
+  KEY idx_categories_canvas_id (canvas_id)
+);
+
+CREATE TABLE IF NOT EXISTS business_ideas (
+  id CHAR(36) PRIMARY KEY,
+  user_id CHAR(36) NOT NULL,
+  canvas_id CHAR(36) NOT NULL,
+  original_idea TEXT NOT NULL,
+  ai_enhanced_idea TEXT NULL,
+  selected_idea TEXT NULL,
+  selection_type VARCHAR(30) NULL,
+  generation_status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  created_by CHAR(36) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_by CHAR(36) NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  CONSTRAINT fk_business_ideas_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_business_ideas_canvas FOREIGN KEY (canvas_id) REFERENCES canvas(id),
+  KEY idx_business_ideas_user_id (user_id)
+);
