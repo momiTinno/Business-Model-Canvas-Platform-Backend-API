@@ -1,0 +1,22 @@
+{
+  "name": "business-model-canvas-platform-backend-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API for AI-assisted business idea enhancement.",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/index.js",
+    "start": "node --env-file=.env src/index.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  }
+}
