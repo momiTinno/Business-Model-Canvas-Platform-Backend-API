@@ -12,7 +12,6 @@ const requiredEnvironmentVariables = Object.freeze([
   "JWT_EXPIRES_IN",
   "BCRYPT_SALT_ROUNDS",
   "PORTKEY_API_KEY",
-  "PORTKEY_VIRTUAL_KEY",
   "BUSINESS_IDEA_PROMPT_ID",
   "CANVAS_GENERATION_PROMPT_ID",
 ]);
