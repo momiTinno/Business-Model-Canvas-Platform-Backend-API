@@ -1,7 +1,10 @@
-import app from "./app.js";
+import { appConfig } from "./config/app.config.js";
+import { validateEnvironment } from "./config/env.config.js";
 
-const port = process.env.PORT || 3000;
+validateEnvironment();
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+const { default: app } = await import("./app.js");
+
+app.listen(appConfig.port, () => {
+  console.log(`Server listening on port ${appConfig.port}`);
 });
