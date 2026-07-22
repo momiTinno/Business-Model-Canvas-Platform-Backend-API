@@ -1,21 +1,20 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
-import { databasePool } from "../../db/mysql/mysql.connection.js";
+
+import { getHealthStatus } from "./health.service.js";
 
 export const getHealth = async (request, response, next) => {
   try {
-    await databasePool.query("SELECT 1");
-    return response.status(HTTP_STATUS.OK).json({
+    const database = await getHealthStatus();
+    const statusCode =
+      database === "connected"
+        ? HTTP_STATUS.OK
+        : HTTP_STATUS.SERVICE_UNAVAILABLE;
+
+    return response.status(statusCode).json({
       success: true,
-      data: { status: "ok", database: "connected", uptime: process.uptime() },
+      data: { status: "ok", database, uptime: process.uptime() },
     });
   } catch (error) {
-    return response.status(HTTP_STATUS.SERVICE_UNAVAILABLE).json({
-      success: true,
-      data: {
-        status: "ok",
-        database: "disconnected",
-        uptime: process.uptime(),
-      },
-    });
+    return next(error);
   }
 };
