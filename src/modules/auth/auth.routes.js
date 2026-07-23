@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate } from "../../middleware/authentication.middleware.js";
+import { authenticationMiddleware } from "../../middleware/authentication.middleware.js";
 import {
   authRateLimit,
   emailAuthRateLimit,
@@ -25,4 +25,8 @@ authRouter.post(
   emailAuthRateLimit,
   authController.loginUser,
 );
-authRouter.get("/me", authenticate, authController.getMe);
+authRouter.get(
+  "/me",
+  authenticationMiddleware.authenticate,
+  authController.getMe,
+);

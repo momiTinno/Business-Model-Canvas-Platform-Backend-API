@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { validateUuidParam } from "../src/middleware/uuid-validation.middleware.js";
+import { uuidValidationMiddleware } from "../src/middleware/uuid-validation.middleware.js";
 
 test("rejects invalid canvas UUID route parameters", () => {
   let responseBody;
@@ -11,7 +11,7 @@ test("rejects invalid canvas UUID route parameters", () => {
       responseBody = body;
     },
   };
-  validateUuidParam("canvasTypeId")(
+  uuidValidationMiddleware.validateParam("canvasTypeId")(
     { params: { canvasTypeId: "invalid" } },
     response,
     () => assert.fail("next must not run"),
