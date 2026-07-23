@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  validateLogin,
-  validateRegistration,
-} from "../src/middleware/auth-validation.middleware.js";
+import { authValidationMiddleware } from "../src/middleware/auth-validation.middleware.js";
 
 const runMiddleware = (middleware, body) =>
   new Promise((resolve) => middleware({ body }, {}, resolve));
@@ -17,7 +14,9 @@ test("registration normalizes email and name before the controller", async () =>
       password: "SecurePass123",
     },
   };
-  await new Promise((resolve) => validateRegistration(request, {}, resolve));
+  await new Promise((resolve) =>
+    authValidationMiddleware.validateRegistration(request, {}, resolve),
+  );
   assert.deepEqual(request.validatedBody, {
     name: "Founder",
     email: "user@example.com",
@@ -28,7 +27,7 @@ test("registration normalizes email and name before the controller", async () =>
 test("login rejects malformed credentials before controller execution", async () => {
   let error;
   await new Promise((resolve) =>
-    validateLogin(
+    authValidationMiddleware.validateLogin(
       { body: { email: "invalid", password: "short" } },
       {},
       (value) => {

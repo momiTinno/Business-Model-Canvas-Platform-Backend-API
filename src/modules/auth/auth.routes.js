@@ -4,24 +4,21 @@ import {
   authRateLimit,
   emailAuthRateLimit,
 } from "../../middleware/auth-rate-limit.middleware.js";
-import {
-  validateLogin,
-  validateRegistration,
-} from "../../middleware/auth-validation.middleware.js";
+import { authValidationMiddleware } from "../../middleware/auth-validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
 export const authRouter = Router();
 const authController = new AuthController();
 authRouter.post(
   "/register",
   authRateLimit,
-  validateRegistration,
+  authValidationMiddleware.validateRegistration,
   emailAuthRateLimit,
   authController.registerUser,
 );
 authRouter.post(
   "/login",
   authRateLimit,
-  validateLogin,
+  authValidationMiddleware.validateLogin,
   emailAuthRateLimit,
   authController.loginUser,
 );
