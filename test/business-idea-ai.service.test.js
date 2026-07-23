@@ -18,6 +18,15 @@ test("accepts a non-empty enhanced idea", async () => {
   );
 });
 
+test("accepts Portkey text-completion responses", async () => {
+  assert.equal(
+    await serviceFor({
+      body: { choices: [{ text: " Enhanced idea " }] },
+    }).enhance("Original"),
+    "Enhanced idea",
+  );
+});
+
 test("rejects empty and whitespace-only AI responses", async () => {
   await assert.rejects(
     serviceFor(responseWith("")).enhance("Original"),
