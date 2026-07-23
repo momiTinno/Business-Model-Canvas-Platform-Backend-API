@@ -14,3 +14,17 @@ export const authRateLimit = rateLimit({
       code: ERROR_CODE.RATE_LIMIT_EXCEEDED,
     }),
 });
+
+export const emailAuthRateLimit = rateLimit({
+  windowMs: authConfig.rateLimitWindowMs,
+  limit: authConfig.rateLimitMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (request) => request.validatedBody.email,
+  handler: (request, response) =>
+    response.status(429).json({
+      success: false,
+      message: "Too many authentication attempts",
+      code: ERROR_CODE.RATE_LIMIT_EXCEEDED,
+    }),
+});
