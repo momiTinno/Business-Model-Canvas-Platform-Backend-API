@@ -32,7 +32,7 @@ export class AuthService {
     if (
       !user ||
       user.disabled ||
-      !(await bcrypt.compare(password, user.password_hash))
+      !(await bcrypt.compare(password, user.password))
     )
       throw new AppError(
         "Invalid email or password",
