@@ -18,9 +18,14 @@ export class BusinessIdeaDbService {
     });
   };
   findBusinessIdeasByUser = async (userId, limit, offset) => {
+    const safeLimit = Math.min(Math.max(Number(limit), 1), 100);
+    const safeOffset = Math.max(Number(offset), 0);
     const [rows] = await this.dbExecutor({
-      query: FIND_BUSINESS_IDEAS_BY_USER,
-      parameters: [userId, limit, offset],
+      query: FIND_BUSINESS_IDEAS_BY_USER.replace(
+        "__OFFSET__",
+        String(safeOffset),
+      ).replace("__LIMIT__", String(safeLimit)),
+      parameters: [userId],
     });
     return rows;
   };
