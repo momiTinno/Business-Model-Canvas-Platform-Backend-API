@@ -2,13 +2,16 @@ import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
 import { CanvasService } from "../canvas/canvas.service.js";
 import { BusinessIdeaDbService } from "./business-idea.db.service.js";
+import { BusinessIdeaAiService } from "./business-idea-ai.service.js";
 export class BusinessIdeaService {
   constructor(
     businessIdeaDbService = new BusinessIdeaDbService(),
     canvasService = new CanvasService(),
+    businessIdeaAiService = new BusinessIdeaAiService(),
   ) {
     this.businessIdeaDbService = businessIdeaDbService;
     this.canvasService = canvasService;
+    this.businessIdeaAiService = businessIdeaAiService;
   }
   createBusinessIdea = async ({ userId, canvasTypeId, businessIdea }) => {
     if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))
@@ -49,5 +52,32 @@ export class BusinessIdeaService {
         "BUSINESS_IDEA_NOT_FOUND",
       );
     return idea;
+  };
+  enhanceBusinessIdea = async (idea, userId) => {
+    try {
+      const aiEnhancedIdea = await this.businessIdeaAiService.enhance(
+        idea.originalIdea,
+      );
+      await this.businessIdeaDbService.updateEnhancement({
+        id: idea.id,
+        userId,
+        enhancedIdea: aiEnhancedIdea,
+        status: "COMPLETED",
+      });
+      return {
+        id: idea.id,
+        originalIdea: idea.originalIdea,
+        aiEnhancedIdea,
+        generationStatus: "COMPLETED",
+      };
+    } catch (error) {
+      await this.businessIdeaDbService.updateEnhancement({
+        id: idea.id,
+        userId,
+        enhancedIdea: null,
+        status: "FAILED",
+      });
+      throw error;
+    }
   };
 }

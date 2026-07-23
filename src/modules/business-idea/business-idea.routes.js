@@ -18,3 +18,9 @@ businessIdeaRouter.get(
   businessIdeaMiddleware.loadOwnedBusinessIdea,
   businessIdeaController.getBusinessIdea,
 );
+businessIdeaRouter.post(
+  "/:businessIdeaId/enhance",
+  uuidValidationMiddleware.validateParam("businessIdeaId"),
+  businessIdeaMiddleware.loadOwnedBusinessIdea,
+  businessIdeaController.enhanceBusinessIdea,
+);

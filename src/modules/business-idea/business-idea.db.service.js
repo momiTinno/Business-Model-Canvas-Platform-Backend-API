@@ -35,4 +35,11 @@ export class BusinessIdeaDbService {
     });
     return rows[0] ?? null;
   };
+  updateEnhancement = async ({ id, userId, enhancedIdea, status }) => {
+    await this.dbExecutor({
+      query:
+        "UPDATE business_ideas SET ai_enhanced_idea = ?, generation_status = ?, updated_by = ? WHERE id = ? AND deleted = FALSE",
+      parameters: [enhancedIdea, status, userId, id],
+    });
+  };
 }

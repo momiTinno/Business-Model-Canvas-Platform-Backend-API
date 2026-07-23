@@ -41,4 +41,17 @@ export class BusinessIdeaController {
       next(error);
     }
   };
+  enhanceBusinessIdea = async (req, res, next) => {
+    try {
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: await this.businessIdeaService.enhanceBusinessIdea(
+          req.businessIdea,
+          req.user.id,
+        ),
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
