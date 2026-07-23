@@ -18,7 +18,9 @@ test("rolls back and releases a transaction when its callback fails", async () =
       return connection;
     },
   };
-  const runInTransaction = new MysqlTransaction(pool).run;
+  const transaction = new MysqlTransaction();
+  transaction.pool = pool;
+  const runInTransaction = transaction.run;
 
   await assert.rejects(
     runInTransaction(async () => {

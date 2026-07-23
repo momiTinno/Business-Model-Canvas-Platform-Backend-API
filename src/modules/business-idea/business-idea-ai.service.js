@@ -1,8 +1,8 @@
 import { AppError } from "../../utils/app-error.util.js";
 import { PortkeyService } from "../portkey/portkey.service.js";
 export class BusinessIdeaAiService {
-  constructor(portkeyService = new PortkeyService()) {
-    this.portkeyService = portkeyService;
+  constructor() {
+    this.portkeyService = new PortkeyService();
   }
   enhance = async (originalIdea) => {
     const response =

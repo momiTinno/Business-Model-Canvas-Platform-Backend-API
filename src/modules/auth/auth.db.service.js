@@ -1,8 +1,8 @@
 import { mysqlExecutor } from "../../db/mysql/mysql.executor.js";
 
 export class AuthDbService {
-  constructor(dbExecutor = mysqlExecutor.execute) {
-    this.dbExecutor = dbExecutor;
+  constructor() {
+    this.dbExecutor = mysqlExecutor.execute;
   }
   findUserByEmail = async (email) => {
     const [rows] = await this.dbExecutor({

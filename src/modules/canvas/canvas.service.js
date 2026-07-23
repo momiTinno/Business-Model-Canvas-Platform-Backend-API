@@ -1,8 +1,8 @@
 import { AppError } from "../../utils/app-error.util.js";
 import { CanvasDbService } from "./canvas.db.service.js";
 export class CanvasService {
-  constructor(canvasDbService = new CanvasDbService()) {
-    this.canvasDbService = canvasDbService;
+  constructor() {
+    this.canvasDbService = new CanvasDbService();
   }
   getCanvasTypes = () => this.canvasDbService.findCanvasTypes();
   getCanvasTypeById = (id) => this.canvasDbService.findCanvasTypeById(id);

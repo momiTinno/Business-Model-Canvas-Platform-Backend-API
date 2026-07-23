@@ -3,8 +3,8 @@ import { AppError } from "../../utils/app-error.util.js";
 import { AuthService } from "./auth.service.js";
 
 export class AuthController {
-  constructor(authService = new AuthService()) {
-    this.authService = authService;
+  constructor() {
+    this.authService = new AuthService();
   }
   registerUser = async (req, res, next) => {
     try {

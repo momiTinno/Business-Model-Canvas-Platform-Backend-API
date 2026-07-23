@@ -1,7 +1,7 @@
 import { mysqlExecutor } from "../../db/mysql/mysql.executor.js";
 export class CanvasDbService {
-  constructor(dbExecutor = mysqlExecutor.execute) {
-    this.dbExecutor = dbExecutor;
+  constructor() {
+    this.dbExecutor = mysqlExecutor.execute;
   }
   findCanvasTypes = async () => {
     const [rows] = await this.dbExecutor({

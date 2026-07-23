@@ -6,8 +6,8 @@ import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
 import { AuthDbService } from "./auth.db.service.js";
 export class AuthService {
-  constructor(authDbService = new AuthDbService()) {
-    this.authDbService = authDbService;
+  constructor() {
+    this.authDbService = new AuthDbService();
   }
   register = async ({ name, email, password }) => {
     if (await this.authDbService.findUserByEmail(email))

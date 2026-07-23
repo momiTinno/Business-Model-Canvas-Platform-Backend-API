@@ -2,8 +2,8 @@ import { AppError } from "../utils/app-error.util.js";
 import { isValid } from "../utils/uuid.util.js";
 import { BusinessIdeaService } from "../modules/business-idea/business-idea.service.js";
 export class BusinessIdeaMiddleware {
-  constructor(businessIdeaService = new BusinessIdeaService()) {
-    this.businessIdeaService = businessIdeaService;
+  constructor() {
+    this.businessIdeaService = new BusinessIdeaService();
   }
   validateCreate = (req, res, next) => {
     try {

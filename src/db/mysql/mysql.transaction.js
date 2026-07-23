@@ -1,7 +1,7 @@
 import { databasePool } from "./mysql.connection.js";
 export class MysqlTransaction {
-  constructor(pool = databasePool) {
-    this.pool = pool;
+  constructor() {
+    this.pool = databasePool;
   }
   run = async (callback) => {
     const connection = await this.pool.getConnection();

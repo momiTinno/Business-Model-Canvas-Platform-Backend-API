@@ -1,8 +1,8 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
 import { BusinessIdeaService } from "./business-idea.service.js";
 export class BusinessIdeaController {
-  constructor(businessIdeaService = new BusinessIdeaService()) {
-    this.businessIdeaService = businessIdeaService;
+  constructor() {
+    this.businessIdeaService = new BusinessIdeaService();
   }
   createBusinessIdea = async (req, res, next) => {
     try {

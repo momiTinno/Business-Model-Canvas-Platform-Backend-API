@@ -1,8 +1,8 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
 import { CanvasService } from "./canvas.service.js";
 export class CanvasController {
-  constructor(canvasService = new CanvasService()) {
-    this.canvasService = canvasService;
+  constructor() {
+    this.canvasService = new CanvasService();
   }
   listCanvasTypes = async (req, res, next) => {
     try {

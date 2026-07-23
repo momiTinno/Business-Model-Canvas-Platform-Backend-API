@@ -5,8 +5,11 @@ import { BusinessIdeaAiService } from "../src/modules/business-idea/business-ide
 const responseWith = (content) => ({
   body: { choices: [{ message: { content } }] },
 });
-const serviceFor = (response) =>
-  new BusinessIdeaAiService({ enhanceBusinessIdea: async () => response });
+const serviceFor = (response) => {
+  const service = new BusinessIdeaAiService();
+  service.portkeyService = { enhanceBusinessIdea: async () => response };
+  return service;
+};
 
 test("accepts a non-empty enhanced idea", async () => {
   assert.equal(
