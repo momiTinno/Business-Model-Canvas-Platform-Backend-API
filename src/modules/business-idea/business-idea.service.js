@@ -1,8 +1,8 @@
 import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
 import { CanvasService } from "../canvas/canvas.service.js";
-import { BusinessIdeaDbService } from "./business-idea.db.service.js";
-import { BusinessIdeaAiService } from "./business-idea-ai.service.js";
+import { BusinessIdeaDbService } from "./services/business-idea-db.service.js";
+import { BusinessIdeaAiService } from "./services/business-idea-ai.service.js";
 export class BusinessIdeaService {
   constructor() {
     this.businessIdeaDbService = new BusinessIdeaDbService();

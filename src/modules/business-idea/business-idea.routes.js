@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticationMiddleware } from "../../middleware/authentication.middleware.js";
-import { businessIdeaMiddleware } from "../../middleware/business-idea.middleware.js";
+import { businessIdeaMiddleware } from "./middleware/business-idea.middleware.js";
 import { uuidValidationMiddleware } from "../../middleware/uuid-validation.middleware.js";
 import { BusinessIdeaController } from "./business-idea.controller.js";
 export const businessIdeaRouter = Router();

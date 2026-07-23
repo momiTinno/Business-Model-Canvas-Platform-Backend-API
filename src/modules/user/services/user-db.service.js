@@ -1,29 +1,31 @@
-import { mysqlExecutor } from "../../db/mysql/mysql.executor.js";
+import { mysqlExecutor } from "../../../db/mysql/executor.js";
+import {
+  CREATE_USER,
+  FIND_USER_BY_EMAIL,
+  FIND_USER_BY_ID,
+} from "../queries/user.query.js";
 
-export class AuthDbService {
+export class UserDbService {
   constructor() {
     this.dbExecutor = mysqlExecutor.execute;
   }
   findUserByEmail = async (email) => {
     const [rows] = await this.dbExecutor({
-      query:
-        "SELECT id, name, email, password_hash, disabled, created_at FROM users WHERE email = ? AND deleted = FALSE LIMIT 1",
+      query: FIND_USER_BY_EMAIL,
       parameters: [email],
     });
     return rows[0] ?? null;
   };
   findUserById = async (id) => {
     const [rows] = await this.dbExecutor({
-      query:
-        "SELECT id, name, email, created_at FROM users WHERE id = ? AND deleted = FALSE AND disabled = FALSE LIMIT 1",
+      query: FIND_USER_BY_ID,
       parameters: [id],
     });
     return rows[0] ?? null;
   };
   createUser = async ({ id, name, email, passwordHash }) => {
     await this.dbExecutor({
-      query:
-        "INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)",
+      query: CREATE_USER,
       parameters: [id, name, email, passwordHash],
     });
     return { id, name, email };

@@ -1,5 +1,5 @@
-import { APP_LIMITS } from "../constants/app.constants.js";
-import { AppError } from "../utils/app-error.util.js";
+import { APP_LIMITS } from "../../../constants/app.constants.js";
+import { AppError } from "../../../utils/app-error.util.js";
 
 export class AuthValidationMiddleware {
   validateCredentials = (request, requireName) => {

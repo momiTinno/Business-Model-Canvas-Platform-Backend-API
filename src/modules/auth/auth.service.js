@@ -4,10 +4,10 @@ import { authConfig } from "../../config/auth.config.js";
 import { ERROR_CODE } from "../../constants/error.constants.js";
 import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
-import { AuthDbService } from "./auth.db.service.js";
+import { UserDbService } from "../user/services/user-db.service.js";
 export class AuthService {
   constructor() {
-    this.authDbService = new AuthDbService();
+    this.authDbService = new UserDbService();
   }
   register = async ({ name, email, password }) => {
     if (await this.authDbService.findUserByEmail(email))

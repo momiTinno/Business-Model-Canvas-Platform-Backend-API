@@ -1,4 +1,4 @@
-import { databasePool } from "./mysql.connection.js";
+import { databasePool } from "./connection.js";
 export class MysqlTransaction {
   constructor() {
     this.pool = databasePool;

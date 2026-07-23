@@ -1,4 +1,4 @@
-import { mysqlExecutor } from "../../db/mysql/mysql.executor.js";
+import { mysqlExecutor } from "../../db/mysql/executor.js";
 export class HealthDbService {
   constructor() {
     this.dbExecutor = mysqlExecutor.execute;

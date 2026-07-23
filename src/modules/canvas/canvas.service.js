@@ -1,5 +1,5 @@
 import { AppError } from "../../utils/app-error.util.js";
-import { CanvasDbService } from "./canvas.db.service.js";
+import { CanvasDbService } from "./services/canvas-db.service.js";
 export class CanvasService {
   constructor() {
     this.canvasDbService = new CanvasDbService();

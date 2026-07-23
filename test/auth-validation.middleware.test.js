@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { authValidationMiddleware } from "../src/middleware/auth-validation.middleware.js";
+import { authValidationMiddleware } from "../src/modules/auth/middleware/registration-validation.middleware.js";
 
 const runMiddleware = (middleware, body) =>
   new Promise((resolve) => middleware({ body }, {}, resolve));

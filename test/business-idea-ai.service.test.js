@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BusinessIdeaAiService } from "../src/modules/business-idea/business-idea-ai.service.js";
+import { BusinessIdeaAiService } from "../src/modules/business-idea/services/business-idea-ai.service.js";
 
 const responseWith = (content) => ({
   body: { choices: [{ message: { content } }] },
