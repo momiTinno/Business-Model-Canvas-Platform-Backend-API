@@ -14,7 +14,7 @@ app.use(requestLoggingMiddleware);
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/canvas-types", canvasRouter);
-app.use(notFoundMiddleware);
-app.use(errorMiddleware);
+app.use(notFoundMiddleware.handle);
+app.use(errorMiddleware.handle);
 
 export default app;
