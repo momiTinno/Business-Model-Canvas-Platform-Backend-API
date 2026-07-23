@@ -8,20 +8,21 @@ import {
   validateLogin,
   validateRegistration,
 } from "../../middleware/auth-validation.middleware.js";
-import { getMe, loginUser, registerUser } from "./auth.controller.js";
+import { AuthController } from "./auth.controller.js";
 export const authRouter = Router();
+const authController = new AuthController();
 authRouter.post(
   "/register",
   authRateLimit,
   validateRegistration,
   emailAuthRateLimit,
-  registerUser,
+  authController.registerUser,
 );
 authRouter.post(
   "/login",
   authRateLimit,
   validateLogin,
   emailAuthRateLimit,
-  loginUser,
+  authController.loginUser,
 );
-authRouter.get("/me", authenticate, getMe);
+authRouter.get("/me", authenticate, authController.getMe);
