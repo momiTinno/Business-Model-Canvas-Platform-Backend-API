@@ -10,7 +10,7 @@ import { canvasRouter } from "./modules/canvas/canvas.routes.js";
 const app = express();
 
 app.use(express.json());
-app.use(requestLoggingMiddleware);
+app.use(requestLoggingMiddleware.handle);
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/canvas-types", canvasRouter);

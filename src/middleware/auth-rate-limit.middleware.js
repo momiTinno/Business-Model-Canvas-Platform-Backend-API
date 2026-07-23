@@ -16,13 +16,11 @@ export class AuthRateLimitMiddleware {
       legacyHeaders: false,
       ...(keyGenerator ? { keyGenerator } : {}),
       handler: (request, response) =>
-        response
-          .status(429)
-          .json({
-            success: false,
-            message: "Too many authentication attempts",
-            code: ERROR_CODE.RATE_LIMIT_EXCEEDED,
-          }),
+        response.status(429).json({
+          success: false,
+          message: "Too many authentication attempts",
+          code: ERROR_CODE.RATE_LIMIT_EXCEEDED,
+        }),
     });
 }
 export const authRateLimitMiddleware = new AuthRateLimitMiddleware();

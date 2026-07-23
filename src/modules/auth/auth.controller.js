@@ -9,24 +9,20 @@ export class AuthController {
   registerUser = async (req, res, next) => {
     try {
       const user = await this.authService.register(req.validatedBody);
-      res
-        .status(HTTP_STATUS.CREATED)
-        .json({
-          success: true,
-          data: { ...user, createdAt: new Date().toISOString() },
-        });
+      res.status(HTTP_STATUS.CREATED).json({
+        success: true,
+        data: { ...user, createdAt: new Date().toISOString() },
+      });
     } catch (error) {
       next(error);
     }
   };
   loginUser = async (req, res, next) => {
     try {
-      res
-        .status(HTTP_STATUS.OK)
-        .json({
-          success: true,
-          data: await this.authService.login(req.validatedBody),
-        });
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: await this.authService.login(req.validatedBody),
+      });
     } catch (error) {
       next(error);
     }
