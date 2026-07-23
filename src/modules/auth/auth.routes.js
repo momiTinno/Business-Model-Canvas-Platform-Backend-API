@@ -1,12 +1,21 @@
 import { Router } from "express";
-import { authenticate } from "../../middleware/authentication.middleware.js";
-import { authRateLimit } from "../../middleware/auth-rate-limit.middleware.js";
-import {
-  validateLogin,
-  validateRegistration,
-} from "../../middleware/auth-validation.middleware.js";
-import { getMe, loginUser, registerUser } from "./auth.controller.js";
+import { authenticationMiddleware } from "../../middleware/authentication.middleware.js";
+import { authValidationMiddleware } from "./middleware/registration-validation.middleware.js";
+import { AuthController } from "./auth.controller.js";
 export const authRouter = Router();
-authRouter.post("/register", authRateLimit, validateRegistration, registerUser);
-authRouter.post("/login", authRateLimit, validateLogin, loginUser);
-authRouter.get("/me", authenticate, getMe);
+const authController = new AuthController();
+authRouter.post(
+  "/register",
+  authValidationMiddleware.validateRegistration,
+  authController.registerUser,
+);
+authRouter.post(
+  "/login",
+  authValidationMiddleware.validateLogin,
+  authController.loginUser,
+);
+authRouter.get(
+  "/me",
+  authenticationMiddleware.authenticate,
+  authController.getMe,
+);

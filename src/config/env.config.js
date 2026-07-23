@@ -1,6 +1,7 @@
 const requiredEnvironmentVariables = Object.freeze([
   "NODE_ENV",
   "PORT",
+  "CORS_ORIGIN",
   "DB_HOST",
   "DB_PORT",
   "DB_NAME",

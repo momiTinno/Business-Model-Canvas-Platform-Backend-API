@@ -1,5 +1,7 @@
-import { execute } from "../../db/mysql/mysql.executor.js";
-
-export const checkDatabaseConnection = async () => {
-  await execute({ query: "SELECT 1" });
-};
+import { mysqlExecutor } from "../../db/mysql/executor.js";
+export class HealthDbService {
+  constructor() {
+    this.dbExecutor = mysqlExecutor.execute;
+  }
+  checkDatabaseConnection = async () => this.dbExecutor({ query: "SELECT 1" });
+}
