@@ -11,12 +11,10 @@ export const listCanvasTypes = async (req, res, next) => {
 };
 export const listCategories = async (req, res, next) => {
   try {
-    res
-      .status(HTTP_STATUS.OK)
-      .json({
-        success: true,
-        data: await getCategoriesForCanvas(req.params.canvasTypeId),
-      });
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: await getCategoriesForCanvas(req.params.canvasTypeId),
+    });
   } catch (error) {
     next(error);
   }
