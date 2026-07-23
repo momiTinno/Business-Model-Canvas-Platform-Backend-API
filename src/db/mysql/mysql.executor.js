@@ -1,11 +1,9 @@
 import { databasePool } from "./mysql.connection.js";
-
-export const execute = async ({
-  query,
-  parameters = [],
-  connection = null,
-}) => {
-  const executor = connection ?? databasePool;
-
-  return executor.execute(query, parameters);
-};
+export class MysqlExecutor {
+  constructor(pool = databasePool) {
+    this.pool = pool;
+  }
+  execute = async ({ query, parameters = [], connection = null }) =>
+    (connection ?? this.pool).execute(query, parameters);
+}
+export const mysqlExecutor = new MysqlExecutor();
