@@ -1,5 +1,8 @@
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
 
+import { appConfig } from "./config/app.config.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
 import { requestLoggingMiddleware } from "./middleware/request-logging.middleware.js";
@@ -10,6 +13,8 @@ import { businessIdeaRouter } from "./modules/business-idea/business-idea.routes
 
 const app = express();
 
+app.use(helmet());
+app.use(cors({ origin: appConfig.corsOrigin }));
 app.use(express.json({ limit: "100kb" }));
 app.use(requestLoggingMiddleware.handle);
 app.use("/api", healthRouter);
