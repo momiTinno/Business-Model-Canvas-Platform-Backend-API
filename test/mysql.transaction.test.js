@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MysqlTransaction } from "../src/db/mysql/mysql.transaction.js";
+import { MysqlTransaction } from "../src/db/mysql/transaction.js";
 
 test("rolls back and releases a transaction when its callback fails", async () => {
   const rows = [];
@@ -18,7 +18,9 @@ test("rolls back and releases a transaction when its callback fails", async () =
       return connection;
     },
   };
-  const runInTransaction = new MysqlTransaction(pool).run;
+  const transaction = new MysqlTransaction();
+  transaction.pool = pool;
+  const runInTransaction = transaction.run;
 
   await assert.rejects(
     runInTransaction(async () => {

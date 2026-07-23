@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BusinessIdeaAiService } from "../src/modules/business-idea/business-idea-ai.service.js";
+import { BusinessIdeaAiService } from "../src/modules/business-idea/services/business-idea-ai.service.js";
 
 const responseWith = (content) => ({
   body: { choices: [{ message: { content } }] },
 });
-const serviceFor = (response) =>
-  new BusinessIdeaAiService({ enhanceBusinessIdea: async () => response });
+const serviceFor = (response) => {
+  const service = new BusinessIdeaAiService();
+  service.portkeyService = { enhanceBusinessIdea: async () => response };
+  return service;
+};
 
 test("accepts a non-empty enhanced idea", async () => {
   assert.equal(

@@ -1,8 +1,8 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
 import { HealthService } from "./health.service.js";
 export class HealthController {
-  constructor(healthService = new HealthService()) {
-    this.healthService = healthService;
+  constructor() {
+    this.healthService = new HealthService();
   }
   getHealth = async (req, res, next) => {
     try {

@@ -1,7 +1,7 @@
 import { HealthDbService } from "./health.db.service.js";
 export class HealthService {
-  constructor(healthDbService = new HealthDbService()) {
-    this.healthDbService = healthDbService;
+  constructor() {
+    this.healthDbService = new HealthDbService();
   }
   getHealthStatus = async () => {
     try {

@@ -1,17 +1,13 @@
 import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
 import { CanvasService } from "../canvas/canvas.service.js";
-import { BusinessIdeaDbService } from "./business-idea.db.service.js";
-import { BusinessIdeaAiService } from "./business-idea-ai.service.js";
+import { BusinessIdeaDbService } from "./services/business-idea-db.service.js";
+import { BusinessIdeaAiService } from "./services/business-idea-ai.service.js";
 export class BusinessIdeaService {
-  constructor(
-    businessIdeaDbService = new BusinessIdeaDbService(),
-    canvasService = new CanvasService(),
-    businessIdeaAiService = new BusinessIdeaAiService(),
-  ) {
-    this.businessIdeaDbService = businessIdeaDbService;
-    this.canvasService = canvasService;
-    this.businessIdeaAiService = businessIdeaAiService;
+  constructor() {
+    this.businessIdeaDbService = new BusinessIdeaDbService();
+    this.canvasService = new CanvasService();
+    this.businessIdeaAiService = new BusinessIdeaAiService();
   }
   createBusinessIdea = async ({ userId, canvasTypeId, businessIdea }) => {
     if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))

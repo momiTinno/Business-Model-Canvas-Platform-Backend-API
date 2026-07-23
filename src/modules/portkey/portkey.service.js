@@ -1,8 +1,8 @@
 import { portkeyConfig } from "../../config/portkey.config.js";
 import { PortkeyClient } from "./portkey.client.js";
 export class PortkeyService {
-  constructor(portkeyClient = new PortkeyClient()) {
-    this.portkeyClient = portkeyClient;
+  constructor() {
+    this.portkeyClient = new PortkeyClient();
   }
   enhanceBusinessIdea = async (businessIdea) =>
     this.portkeyClient.completePrompt({
