@@ -2,4 +2,5 @@ export const APP_LIMITS = Object.freeze({
   MAX_EMAIL_LENGTH: 255,
   MAX_NAME_LENGTH: 100,
   MIN_PASSWORD_LENGTH: 8,
+  MAX_ENTRY_LENGTH: 2000,
 });
