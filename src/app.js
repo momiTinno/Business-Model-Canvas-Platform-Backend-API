@@ -10,6 +10,7 @@ import { healthRouter } from "./modules/health/health.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { canvasRouter } from "./modules/canvas/canvas.routes.js";
 import { businessIdeaRouter } from "./modules/business-idea/business-idea.routes.js";
+import { canvasGenerationRouter } from "./modules/canvas-generation/canvas-generation.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/canvas-types", canvasRouter);
 app.use("/api/business-ideas", businessIdeaRouter);
+app.use("/api", canvasGenerationRouter);
 app.use(notFoundMiddleware.handle);
 app.use(errorMiddleware.handle);
 

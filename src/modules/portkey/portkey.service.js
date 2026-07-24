@@ -9,4 +9,9 @@ export class PortkeyService {
       promptId: portkeyConfig.businessIdeaPromptId,
       variables: { businessIdea },
     });
+  generateCanvas = async ({ canvasType, categoryNamesStr, description }) =>
+    this.portkeyClient.completePrompt({
+      promptId: portkeyConfig.canvasGenerationPromptId,
+      variables: { canvasType, categoryNamesStr, description },
+    });
 }
