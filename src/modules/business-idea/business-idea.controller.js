@@ -41,6 +41,20 @@ export class BusinessIdeaController {
       next(error);
     }
   };
+  selectBusinessIdeaVersion = async (req, res, next) => {
+    try {
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: await this.businessIdeaService.selectVersion({
+          idea: req.businessIdea,
+          userId: req.user.id,
+          selectionType: req.validatedBody.selectionType,
+        }),
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
   enhanceBusinessIdea = async (req, res, next) => {
     try {
       res.status(HTTP_STATUS.OK).json({

@@ -18,6 +18,13 @@ businessIdeaRouter.get(
   businessIdeaMiddleware.loadOwnedBusinessIdea,
   businessIdeaController.getBusinessIdea,
 );
+businessIdeaRouter.patch(
+  "/:businessIdeaId/select",
+  uuidValidationMiddleware.validateParam("businessIdeaId"),
+  businessIdeaMiddleware.loadOwnedBusinessIdea,
+  businessIdeaMiddleware.validateSelection,
+  businessIdeaController.selectBusinessIdeaVersion,
+);
 businessIdeaRouter.post(
   "/:businessIdeaId/enhance",
   uuidValidationMiddleware.validateParam("businessIdeaId"),
