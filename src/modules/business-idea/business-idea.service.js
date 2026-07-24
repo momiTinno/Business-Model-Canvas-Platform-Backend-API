@@ -1,7 +1,6 @@
 import { AppError } from "../../utils/app-error.util.js";
 import { generate } from "../../utils/uuid.util.js";
 import { CanvasService } from "../canvas/canvas.service.js";
-import { CanvasGenerationDbService } from "../canvas-generation/services/canvas-generation-db.service.js";
 import { BusinessIdeaDbService } from "./services/business-idea-db.service.js";
 import { BusinessIdeaAiService } from "./services/business-idea-ai.service.js";
 export class BusinessIdeaService {
@@ -9,7 +8,6 @@ export class BusinessIdeaService {
     this.businessIdeaDbService = new BusinessIdeaDbService();
     this.canvasService = new CanvasService();
     this.businessIdeaAiService = new BusinessIdeaAiService();
-    this.canvasGenerationDbService = new CanvasGenerationDbService();
   }
   createBusinessIdea = async ({ userId, canvasTypeId, businessIdea }) => {
     if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))
@@ -50,43 +48,6 @@ export class BusinessIdeaService {
         "BUSINESS_IDEA_NOT_FOUND",
       );
     return idea;
-  };
-  selectVersion = async ({ idea, userId, selectionType }) => {
-    if (
-      await this.canvasGenerationDbService.findCompletedCanvasGenerationByBusinessIdeaId(
-        idea.id,
-      )
-    )
-      throw new AppError(
-        "Selection cannot change after canvas generation",
-        409,
-        "SELECTION_LOCKED_AFTER_GENERATION",
-      );
-    if (
-      await this.canvasGenerationDbService.findActiveCanvasGenerationByBusinessIdeaId(
-        idea.id,
-      )
-    )
-      throw new AppError(
-        "Canvas generation is in progress",
-        409,
-        "GENERATION_IN_PROGRESS",
-      );
-    if (selectionType === "AI_ENHANCED" && !idea.aiEnhancedIdea)
-      throw new AppError(
-        "An AI-enhanced idea is required for this selection",
-        409,
-        "AI_ENHANCED_IDEA_NOT_AVAILABLE",
-      );
-    const selectedIdea =
-      selectionType === "ORIGINAL" ? idea.originalIdea : idea.aiEnhancedIdea;
-    await this.businessIdeaDbService.updateSelection({
-      id: idea.id,
-      userId,
-      selectedIdea,
-      selectionType,
-    });
-    return { id: idea.id, selectedIdea, selectionType };
   };
   enhanceBusinessIdea = async (idea, userId) => {
     try {

@@ -21,21 +21,6 @@ export class BusinessIdeaMiddleware {
       next(error);
     }
   };
-  validateSelection = (req, res, next) => {
-    try {
-      const selectionType = req.body?.selectionType;
-      if (!["ORIGINAL", "AI_ENHANCED"].includes(selectionType))
-        throw new AppError(
-          "selectionType must be ORIGINAL or AI_ENHANCED",
-          400,
-          "VALIDATION_ERROR",
-        );
-      req.validatedBody = { selectionType };
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
   loadOwnedBusinessIdea = async (req, res, next) => {
     try {
       req.businessIdea = await this.businessIdeaService.getOwnedBusinessIdea(

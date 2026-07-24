@@ -4,7 +4,6 @@ import {
   CREATE_BUSINESS_IDEA,
   FIND_BUSINESS_IDEA_BY_ID,
   FIND_BUSINESS_IDEAS_BY_USER,
-  UPDATE_BUSINESS_IDEA_SELECTION,
   UPDATE_ENHANCEMENT,
 } from "../queries/business-idea.query.js";
 
@@ -48,13 +47,6 @@ export class BusinessIdeaDbService {
     await this.dbExecutor({
       query: UPDATE_ENHANCEMENT,
       parameters: [enhancedIdea, status, userId, id],
-    });
-  };
-
-  updateSelection = async ({ id, userId, selectedIdea, selectionType }) => {
-    await this.dbExecutor({
-      query: UPDATE_BUSINESS_IDEA_SELECTION,
-      parameters: [selectedIdea, selectionType, userId, id, userId],
     });
   };
 }
