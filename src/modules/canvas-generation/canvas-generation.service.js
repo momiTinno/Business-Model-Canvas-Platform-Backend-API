@@ -6,6 +6,7 @@ import { CanvasGenerationAiService } from "./services/canvas-generation-ai.servi
 import { CanvasGenerationDbService } from "./services/canvas-generation-db.service.js";
 import { CanvasGenerationValidatorService } from "./services/canvas-generation-validator.service.js";
 import { generate } from "../../utils/uuid.util.js";
+import { OutboxEventDbService } from "../../jobs/services/outbox-event-db.service.js";
 
 export class CanvasGenerationService {
   constructor() {
@@ -15,10 +16,11 @@ export class CanvasGenerationService {
     this.canvasGenerationValidatorService =
       new CanvasGenerationValidatorService();
     this.entryDbService = new EntryDbService();
+    this.outboxEventDbService = new OutboxEventDbService();
     this.mysqlTransaction = mysqlTransaction;
   }
 
-  generateCanvas = async ({ idea, userId }) => {
+  requestCanvasGeneration = async ({ idea, userId, correlationId = null }) => {
     if (!idea.selectedIdea)
       throw new AppError(
         "A selected idea is required before canvas generation",
@@ -45,55 +47,27 @@ export class CanvasGenerationService {
         "CANVAS_CATEGORIES_NOT_CONFIGURED",
       );
     const generationId = generate();
-    await this.canvasGenerationDbService.createCanvasGeneration({
-      id: generationId,
-      idea,
-      userId,
-    });
-    try {
-      const rawContent = await this.canvasGenerationAiService.generate({
-        canvasType: (
-          await this.canvasService.getCanvasTypeById(idea.canvasTypeId)
-        ).name,
-        categoryNamesStr: categories
-          .map((category) => category.name)
-          .join(", "),
-        description: idea.selectedIdea,
-      });
-      const entries = this.canvasGenerationValidatorService.validate({
-        content: rawContent,
-        categories,
-      });
-      await this.mysqlTransaction.run(async (connection) => {
-        await this.entryDbService.createEntries({
-          connection,
-          entries,
-          generationId,
-          userId,
-        });
-        await this.canvasGenerationDbService.updateCanvasGenerationStatus({
-          connection,
-          id: generationId,
-          userId,
-          status: "COMPLETED",
-        });
-      });
-      return {
+    await this.mysqlTransaction.run(async (connection) => {
+      await this.canvasGenerationDbService.createCanvasGeneration({
+        connection,
         id: generationId,
-        businessIdeaId: idea.id,
-        canvasTypeId: idea.canvasTypeId,
-        generationStatus: "COMPLETED",
-        createdAt: new Date().toISOString(),
-      };
-    } catch (error) {
-      await this.canvasGenerationDbService.updateCanvasGenerationStatus({
-        id: generationId,
+        idea,
         userId,
-        status: "FAILED",
-        errorCode: error.code ?? "AI_PROVIDER_ERROR",
       });
-      throw error;
-    }
+      await this.outboxEventDbService.createEvent({
+        connection,
+        id: generate(),
+        eventType: "CANVAS_GENERATION_REQUESTED",
+        payload: { generationId, correlationId },
+      });
+    });
+    return {
+      id: generationId,
+      businessIdeaId: idea.id,
+      canvasTypeId: idea.canvasTypeId,
+      generationStatus: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
   };
 
   getOwnedCanvasGeneration = async (canvasGenerationId, userId) => {

@@ -5,6 +5,7 @@ export const HTTP_STATUS = Object.freeze({
   SERVICE_UNAVAILABLE: 503,
   OK: 200,
   CREATED: 201,
+  ACCEPTED: 202,
   UNAUTHORIZED: 401,
   CONFLICT: 409,
 });
