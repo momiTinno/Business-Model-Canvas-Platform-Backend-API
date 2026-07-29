@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "node --watch --env-file=.env src/index.js",
     "start": "node --env-file=.env src/index.js",
+    "worker:dev": "node --watch --env-file=.env src/worker.js",
+    "worker": "node --env-file=.env src/worker.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --test",
@@ -14,10 +16,12 @@
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.81.2",
     "cors": "^2.8.6",
     "express": "^5.1.0",
     "express-rate-limit": "^8.6.0",
     "helmet": "^8.3.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.14.3",
     "portkey-ai": "^3.1.0"

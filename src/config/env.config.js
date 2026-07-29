@@ -17,6 +17,12 @@ const requiredEnvironmentVariables = Object.freeze([
   "PORTKEY_API_KEY",
   "BUSINESS_IDEA_PROMPT_ID",
   "CANVAS_GENERATION_PROMPT_ID",
+  "REDIS_HOST",
+  "REDIS_PORT",
+  "REDIS_DB",
+  "QUEUE_CANVAS_GENERATION_CONCURRENCY",
+  "QUEUE_JOB_ATTEMPTS",
+  "QUEUE_BACKOFF_MS",
 ]);
 
 const getEnvironmentValue = (name) => process.env[name]?.trim();
