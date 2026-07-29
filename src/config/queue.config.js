@@ -13,4 +13,12 @@ export const queueConfig = Object.freeze({
     attempts: Number(environment.get("QUEUE_JOB_ATTEMPTS")),
     backoffMs: Number(environment.get("QUEUE_BACKOFF_MS")),
   },
+  businessIdeaEnhancement: {
+    name: "business-idea-enhancement",
+    concurrency: Number(
+      environment.get("QUEUE_BUSINESS_IDEA_ENHANCEMENT_CONCURRENCY"),
+    ),
+    attempts: Number(environment.get("QUEUE_JOB_ATTEMPTS")),
+    backoffMs: Number(environment.get("QUEUE_BACKOFF_MS")),
+  },
 });

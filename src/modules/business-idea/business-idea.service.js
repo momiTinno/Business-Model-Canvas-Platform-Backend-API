@@ -4,12 +4,16 @@ import { CanvasService } from "../canvas/canvas.service.js";
 import { CanvasGenerationDbService } from "../canvas-generation/services/canvas-generation-db.service.js";
 import { BusinessIdeaDbService } from "./services/business-idea-db.service.js";
 import { BusinessIdeaAiService } from "./services/business-idea-ai.service.js";
+import { OutboxEventDbService } from "../../jobs/services/outbox-event-db.service.js";
+import { mysqlTransaction } from "../../db/mysql/transaction.js";
 export class BusinessIdeaService {
   constructor() {
     this.businessIdeaDbService = new BusinessIdeaDbService();
     this.canvasService = new CanvasService();
     this.businessIdeaAiService = new BusinessIdeaAiService();
     this.canvasGenerationDbService = new CanvasGenerationDbService();
+    this.outboxEventDbService = new OutboxEventDbService();
+    this.mysqlTransaction = mysqlTransaction;
   }
   createBusinessIdea = async ({ userId, canvasTypeId, businessIdea }) => {
     if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))
@@ -26,7 +30,7 @@ export class BusinessIdeaService {
       canvasTypeId,
       originalIdea: businessIdea,
       aiEnhancedIdea: null,
-      generationStatus: "PENDING",
+      generationStatus: "NOT_REQUESTED",
     };
   };
   listBusinessIdeas = async ({ userId, page, limit }) => {
@@ -88,31 +92,36 @@ export class BusinessIdeaService {
     });
     return { id: idea.id, selectedIdea, selectionType };
   };
-  enhanceBusinessIdea = async (idea, userId) => {
-    try {
-      const aiEnhancedIdea = await this.businessIdeaAiService.enhance(
-        idea.originalIdea,
-      );
-      await this.businessIdeaDbService.updateEnhancement({
-        id: idea.id,
-        userId,
-        enhancedIdea: aiEnhancedIdea,
-        status: "COMPLETED",
+  requestBusinessIdeaEnhancement = async ({
+    idea,
+    userId,
+    correlationId = null,
+  }) => {
+    await this.mysqlTransaction.run(async (connection) => {
+      if (
+        !(await this.businessIdeaDbService.requestEnhancement({
+          connection,
+          id: idea.id,
+          userId,
+        }))
+      )
+        throw new AppError(
+          "Business idea enhancement is in progress",
+          409,
+          "ENHANCEMENT_IN_PROGRESS",
+        );
+      await this.outboxEventDbService.createEvent({
+        connection,
+        id: generate(),
+        eventType: "BUSINESS_IDEA_ENHANCEMENT_REQUESTED",
+        payload: { businessIdeaId: idea.id, correlationId },
       });
-      return {
-        id: idea.id,
-        originalIdea: idea.originalIdea,
-        aiEnhancedIdea,
-        generationStatus: "COMPLETED",
-      };
-    } catch (error) {
-      await this.businessIdeaDbService.updateEnhancement({
-        id: idea.id,
-        userId,
-        enhancedIdea: null,
-        status: "FAILED",
-      });
-      throw error;
-    }
+    });
+    return {
+      id: idea.id,
+      originalIdea: idea.originalIdea,
+      aiEnhancedIdea: idea.aiEnhancedIdea,
+      generationStatus: "PENDING",
+    };
   };
 }
