@@ -18,12 +18,13 @@ test("queues a business idea enhancement through the transactional outbox", asyn
     idea: {
       id: "idea-id",
       originalIdea: "A home-repair marketplace",
-      aiEnhancedIdea: null,
+      aiEnhancedIdea: "A stale enhancement",
     },
     userId: "user-id",
     correlationId: "request-id",
   });
   assert.equal(result.generationStatus, "PENDING");
+  assert.equal(result.aiEnhancedIdea, null);
   assert.equal(outboxEvent.eventType, "BUSINESS_IDEA_ENHANCEMENT_REQUESTED");
   assert.deepEqual(outboxEvent.payload, {
     businessIdeaId: "idea-id",

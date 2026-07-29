@@ -9,7 +9,7 @@ export const FIND_BUSINESS_IDEA_BY_ID =
 export const UPDATE_ENHANCEMENT =
   "UPDATE business_ideas SET ai_enhanced_idea = ?, generation_status = ?, updated_by = ? WHERE id = ? AND deleted = FALSE";
 export const REQUEST_ENHANCEMENT =
-  "UPDATE business_ideas SET generation_status = 'PENDING', updated_by = ? WHERE id = ? AND user_id = ? AND generation_status NOT IN ('PENDING', 'PROCESSING') AND deleted = FALSE";
+  "UPDATE business_ideas SET ai_enhanced_idea = NULL, generation_status = 'PENDING', updated_by = ? WHERE id = ? AND user_id = ? AND generation_status NOT IN ('PENDING', 'PROCESSING') AND deleted = FALSE";
 export const CLAIM_ENHANCEMENT =
   "UPDATE business_ideas SET generation_status = 'PROCESSING', updated_by = user_id WHERE id = ? AND generation_status = 'PENDING' AND deleted = FALSE";
 export const RECORD_ENHANCEMENT_JOB_FAILURE =
