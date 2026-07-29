@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { CanvasGenerationService } from "../src/modules/canvas-generation/canvas-generation.service.js";
 
 const idea = {
@@ -13,45 +14,26 @@ const serviceFor = () => {
   service.canvasGenerationDbService = {
     findActiveCanvasGenerationByBusinessIdeaId: async () => null,
     createCanvasGeneration: async () => {},
-    updateCanvasGenerationStatus: async () => {},
   };
   service.canvasService = {
     getCategoriesForCanvas: async () => [
       { id: "category-id", name: "Problem" },
     ],
-    getCanvasTypeById: async () => ({ name: "Lean Canvas" }),
   };
-  service.canvasGenerationAiService = {
-    generate: async () =>
-      JSON.stringify({
-        description: "Summary",
-        Problem: ["A testable hypothesis"],
-      }),
-  };
-  service.canvasGenerationValidatorService = {
-    validate: () => [
-      {
-        id: "entry-id",
-        categoryId: "category-id",
-        content: "A testable hypothesis",
-        sortOrder: 0,
-      },
-    ],
-  };
-  let persistedEntries;
-  service.entryDbService = {
-    createEntries: async (payload) => {
-      persistedEntries = payload.entries;
+  let outboxEvent;
+  service.outboxEventDbService = {
+    createEvent: async (event) => {
+      outboxEvent = event;
     },
   };
   service.mysqlTransaction = { run: async (callback) => callback({}) };
-  return { service, getPersistedEntries: () => persistedEntries };
+  return { service, getOutboxEvent: () => outboxEvent };
 };
 
-test("requires a selected idea before generation", async () => {
+test("requires a selected idea before queueing generation", async () => {
   const { service } = serviceFor();
   await assert.rejects(
-    service.generateCanvas({
+    service.requestCanvasGeneration({
       idea: { ...idea, selectedIdea: null },
       userId: "user-id",
     }),
@@ -59,18 +41,19 @@ test("requires a selected idea before generation", async () => {
   );
 });
 
-test("persists validated hypotheses transactionally", async () => {
-  const { service, getPersistedEntries } = serviceFor();
-  const result = await service.generateCanvas({ idea, userId: "user-id" });
+test("persists a pending generation and outbox event transactionally", async () => {
+  const { service, getOutboxEvent } = serviceFor();
+  const result = await service.requestCanvasGeneration({
+    idea,
+    userId: "user-id",
+    correlationId: "request-id",
+  });
   assert.equal(result.businessIdeaId, "idea-id");
   assert.equal(result.canvasTypeId, "canvas-id");
-  assert.equal(result.generationStatus, "COMPLETED");
-  assert.deepEqual(getPersistedEntries(), [
-    {
-      id: "entry-id",
-      categoryId: "category-id",
-      content: "A testable hypothesis",
-      sortOrder: 0,
-    },
-  ]);
+  assert.equal(result.generationStatus, "PENDING");
+  assert.equal(getOutboxEvent().eventType, "CANVAS_GENERATION_REQUESTED");
+  assert.deepEqual(getOutboxEvent().payload, {
+    generationId: result.id,
+    correlationId: "request-id",
+  });
 });
