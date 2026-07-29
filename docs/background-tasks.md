@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Canvas generation is now asynchronous. The API stores a durable generation request and the background worker performs the Portkey call and entry persistence. This prevents long-running AI work from holding an HTTP request open.
+Canvas generation and business-idea enhancement are asynchronous. The API stores a durable request and the background worker performs the Portkey call and persistence. This prevents long-running AI work from holding an HTTP request open.
 
 ## Architecture
 
@@ -14,6 +14,12 @@ POST canvas generation
   -> Worker claims the job and marks it PROCESSING
   -> Portkey SDK generates canvas hypotheses
   -> MySQL transaction: persist entries + mark generation COMPLETED
+
+POST business-idea enhancement
+  -> MySQL transaction: business_ideas(PENDING) + outbox_events(PENDING)
+  -> API responds 202 Accepted
+  -> Worker claims the job and marks it PROCESSING
+  -> Portkey SDK enhances the idea and marks it COMPLETED
 ```
 
 If the queue is unavailable when the API receives a request, the outbox event remains in MySQL. The worker retries publishing pending outbox events every five seconds.
@@ -34,6 +40,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DB=0
 QUEUE_CANVAS_GENERATION_CONCURRENCY=2
+QUEUE_BUSINESS_IDEA_ENHANCEMENT_CONCURRENCY=2
 QUEUE_JOB_ATTEMPTS=3
 QUEUE_BACKOFF_MS=5000
 ```
@@ -58,7 +65,7 @@ The API and worker must use the same MySQL and Redis configuration.
 
 ## API behavior
 
-`POST /api/business-ideas/:businessIdeaId/canvas-generations` now returns `202 Accepted`:
+`POST /api/business-ideas/:businessIdeaId/canvas-generations` and `POST /api/business-ideas/:businessIdeaId/enhance` return `202 Accepted` while their work is queued:
 
 ```json
 {
@@ -89,6 +96,8 @@ Poll generation progress with `GET /api/canvas-generations/:canvasGenerationId`.
 - Changed canvas-generation creation from synchronous AI execution to queued execution.
 - Added `worker` and `worker:dev` npm scripts.
 - Added tests for outbox publication, queued generation persistence, retry status, and idempotent completion.
+- Added a dedicated queue and worker for business-idea enhancement.
+- Added migration `006_normalize_business_idea_enhancement_status.sql` so previously unenhanced ideas start as `NOT_REQUESTED`.
 
 ## Verification performed
 

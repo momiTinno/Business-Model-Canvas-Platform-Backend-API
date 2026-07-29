@@ -1,8 +1,10 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
 import { BusinessIdeaService } from "./business-idea.service.js";
+import { OutboxPublisherService } from "../../jobs/services/outbox-publisher.service.js";
 export class BusinessIdeaController {
   constructor() {
     this.businessIdeaService = new BusinessIdeaService();
+    this.outboxPublisherService = new OutboxPublisherService();
   }
   createBusinessIdea = async (req, res, next) => {
     try {
@@ -57,12 +59,23 @@ export class BusinessIdeaController {
   };
   enhanceBusinessIdea = async (req, res, next) => {
     try {
-      res.status(HTTP_STATUS.OK).json({
+      const enhancement =
+        await this.businessIdeaService.requestBusinessIdeaEnhancement({
+          idea: req.businessIdea,
+          userId: req.user.id,
+          correlationId: req.correlationId,
+        });
+      try {
+        await this.outboxPublisherService.publishPendingEvents();
+      } catch (error) {
+        console.error("Business idea enhancement outbox publish failed", {
+          code: error.code ?? "OUTBOX_PUBLISH_FAILED",
+          correlationId: req.correlationId,
+        });
+      }
+      res.status(HTTP_STATUS.ACCEPTED).json({
         success: true,
-        data: await this.businessIdeaService.enhanceBusinessIdea(
-          req.businessIdea,
-          req.user.id,
-        ),
+        data: enhancement,
       });
     } catch (error) {
       next(error);

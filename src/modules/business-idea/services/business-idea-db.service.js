@@ -6,6 +6,9 @@ import {
   FIND_BUSINESS_IDEAS_BY_USER,
   UPDATE_BUSINESS_IDEA_SELECTION,
   UPDATE_ENHANCEMENT,
+  REQUEST_ENHANCEMENT,
+  CLAIM_ENHANCEMENT,
+  RECORD_ENHANCEMENT_JOB_FAILURE,
 } from "../queries/business-idea.query.js";
 
 export class BusinessIdeaDbService {
@@ -44,10 +47,41 @@ export class BusinessIdeaDbService {
     });
     return rows[0] ?? null;
   };
-  updateEnhancement = async ({ id, userId, enhancedIdea, status }) => {
+  updateEnhancement = async ({
+    connection = null,
+    id,
+    userId,
+    enhancedIdea,
+    status,
+  }) => {
     await this.dbExecutor({
       query: UPDATE_ENHANCEMENT,
       parameters: [enhancedIdea, status, userId, id],
+      connection,
+    });
+  };
+
+  requestEnhancement = async ({ connection = null, id, userId }) => {
+    const [result] = await this.dbExecutor({
+      query: REQUEST_ENHANCEMENT,
+      parameters: [userId, id, userId],
+      connection,
+    });
+    return result.affectedRows === 1;
+  };
+
+  claimEnhancement = async (id) => {
+    const [result] = await this.dbExecutor({
+      query: CLAIM_ENHANCEMENT,
+      parameters: [id],
+    });
+    return result.affectedRows === 1;
+  };
+
+  recordEnhancementJobFailure = async ({ id, status }) => {
+    await this.dbExecutor({
+      query: RECORD_ENHANCEMENT_JOB_FAILURE,
+      parameters: [status, id],
     });
   };
 
