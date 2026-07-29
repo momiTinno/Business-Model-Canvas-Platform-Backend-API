@@ -4,6 +4,9 @@ import {
   FIND_ACTIVE_CANVAS_GENERATION_BY_BUSINESS_IDEA_ID,
   FIND_CANVAS_GENERATION_BY_ID_AND_USER_ID,
   FIND_COMPLETED_CANVAS_GENERATION_BY_BUSINESS_IDEA_ID,
+  FIND_CANVAS_GENERATION_FOR_PROCESSING,
+  CLAIM_CANVAS_GENERATION,
+  RECORD_CANVAS_GENERATION_JOB_FAILURE,
   UPDATE_CANVAS_GENERATION_STATUS,
 } from "../queries/canvas-generation.query.js";
 
@@ -28,7 +31,7 @@ export class CanvasGenerationDbService {
     return rows[0] ?? null;
   };
 
-  createCanvasGeneration = async ({ id, idea, userId }) => {
+  createCanvasGeneration = async ({ connection = null, id, idea, userId }) => {
     await this.dbExecutor({
       query: CREATE_CANVAS_GENERATION,
       parameters: [
@@ -39,6 +42,30 @@ export class CanvasGenerationDbService {
         userId,
         userId,
       ],
+      connection,
+    });
+  };
+
+  findCanvasGenerationForProcessing = async (id) => {
+    const [rows] = await this.dbExecutor({
+      query: FIND_CANVAS_GENERATION_FOR_PROCESSING,
+      parameters: [id],
+    });
+    return rows[0] ?? null;
+  };
+
+  claimCanvasGeneration = async (id) => {
+    const [result] = await this.dbExecutor({
+      query: CLAIM_CANVAS_GENERATION,
+      parameters: [id],
+    });
+    return result.affectedRows === 1;
+  };
+
+  recordJobFailure = async ({ id, status, errorCode }) => {
+    await this.dbExecutor({
+      query: RECORD_CANVAS_GENERATION_JOB_FAILURE,
+      parameters: [status, errorCode, id],
     });
   };
 

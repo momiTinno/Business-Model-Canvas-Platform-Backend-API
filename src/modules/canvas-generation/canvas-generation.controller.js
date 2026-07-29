@@ -1,19 +1,32 @@
 import { HTTP_STATUS } from "../../constants/http-status.constants.js";
 import { CanvasGenerationService } from "./canvas-generation.service.js";
+import { OutboxPublisherService } from "../../jobs/services/outbox-publisher.service.js";
 
 export class CanvasGenerationController {
   constructor() {
     this.canvasGenerationService = new CanvasGenerationService();
+    this.outboxPublisherService = new OutboxPublisherService();
   }
 
   createCanvasGeneration = async (req, res, next) => {
     try {
-      res.status(HTTP_STATUS.CREATED).json({
-        success: true,
-        data: await this.canvasGenerationService.generateCanvas({
+      const generation =
+        await this.canvasGenerationService.requestCanvasGeneration({
           idea: req.businessIdea,
           userId: req.user.id,
-        }),
+          correlationId: req.correlationId,
+        });
+      try {
+        await this.outboxPublisherService.publishPendingEvents();
+      } catch (error) {
+        console.error("Canvas generation outbox publish failed", {
+          code: error.code ?? "OUTBOX_PUBLISH_FAILED",
+          correlationId: req.correlationId,
+        });
+      }
+      res.status(HTTP_STATUS.ACCEPTED).json({
+        success: true,
+        data: generation,
       });
     } catch (error) {
       next(error);

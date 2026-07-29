@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS outbox_events (
+  id CHAR(36) PRIMARY KEY,
+  event_type VARCHAR(100) NOT NULL,
+  payload JSON NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  attempts INT NOT NULL DEFAULT 0,
+  available_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  published_at TIMESTAMP NULL,
+  last_error_code VARCHAR(100) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_outbox_events_publishable (status, available_at)
+);
