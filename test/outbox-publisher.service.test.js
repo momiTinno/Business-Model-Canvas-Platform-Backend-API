@@ -26,3 +26,23 @@ test("publishes an outbox event using the generation ID as the queue job ID", as
   assert.deepEqual(queued, { generationId: "generation-id" });
   assert.equal(publishedId, "event-id");
 });
+
+test("publishes a business idea enhancement outbox event", async () => {
+  const service = Object.create(OutboxPublisherService.prototype);
+  let queued;
+  service.businessIdeaEnhancementQueue = {
+    addEnhancement: async (payload) => {
+      queued = payload;
+    },
+  };
+  service.outboxEventDbService = {
+    markPublished: async () => {},
+    recordFailure: async () => {},
+  };
+  await service.publishEvent({
+    id: "event-id",
+    eventType: "BUSINESS_IDEA_ENHANCEMENT_REQUESTED",
+    payload: JSON.stringify({ businessIdeaId: "idea-id" }),
+  });
+  assert.deepEqual(queued, { businessIdeaId: "idea-id" });
+});

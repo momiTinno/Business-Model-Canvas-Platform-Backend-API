@@ -2,6 +2,35 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { BusinessIdeaService } from "../src/modules/business-idea/business-idea.service.js";
 
+test("queues a business idea enhancement through the transactional outbox", async () => {
+  const service = new BusinessIdeaService();
+  let outboxEvent;
+  service.businessIdeaDbService = {
+    requestEnhancement: async () => true,
+  };
+  service.outboxEventDbService = {
+    createEvent: async (event) => {
+      outboxEvent = event;
+    },
+  };
+  service.mysqlTransaction = { run: async (callback) => callback({}) };
+  const result = await service.requestBusinessIdeaEnhancement({
+    idea: {
+      id: "idea-id",
+      originalIdea: "A home-repair marketplace",
+      aiEnhancedIdea: null,
+    },
+    userId: "user-id",
+    correlationId: "request-id",
+  });
+  assert.equal(result.generationStatus, "PENDING");
+  assert.equal(outboxEvent.eventType, "BUSINESS_IDEA_ENHANCEMENT_REQUESTED");
+  assert.deepEqual(outboxEvent.payload, {
+    businessIdeaId: "idea-id",
+    correlationId: "request-id",
+  });
+});
+
 test("lists only the current user's paginated ideas", async () => {
   const service = new BusinessIdeaService();
   service.businessIdeaDbService = {
