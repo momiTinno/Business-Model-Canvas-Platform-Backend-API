@@ -120,7 +120,7 @@ export class BusinessIdeaService {
     return {
       id: idea.id,
       originalIdea: idea.originalIdea,
-      aiEnhancedIdea: idea.aiEnhancedIdea,
+      aiEnhancedIdea: null,
       generationStatus: "PENDING",
     };
   };
