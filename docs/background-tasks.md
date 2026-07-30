@@ -55,17 +55,32 @@ Run the API in one terminal:
 npm run dev
 ```
 
+This terminal logs every incoming request, including the method, path, response status, correlation ID, and authenticated user ID.
+
 Run the queue worker in a second terminal:
 
 ```bash
 npm run worker:dev
 ```
 
+This terminal logs structured `processing`, `completed`, and `failed` lifecycle events for both `business-idea-enhancement` and `canvas-generation` jobs.
+
 The API and worker must use the same MySQL and Redis configuration.
 
 ## API behavior
 
-`POST /api/business-ideas/:businessIdeaId/canvas-generations` and `POST /api/business-ideas/:businessIdeaId/enhance` return `202 Accepted` while their work is queued:
+`POST /api/business-ideas/enhance` is the recommended create-and-enhance command. It accepts the normal idea body, stores the original idea, queues the enhancement in the same transaction, and returns `202 Accepted`:
+
+```json
+{
+  "canvasTypeId": "canvas-type-uuid",
+  "businessIdea": "A detailed business idea"
+}
+```
+
+`POST /api/business-ideas/:businessIdeaId/enhance` remains available when an idea was created earlier. `POST /api/business-ideas/:businessIdeaId/canvas-generations` queues a canvas after `PATCH /api/business-ideas/:businessIdeaId/select` stores the selected version.
+
+Every queued operation returns `202 Accepted`:
 
 ```json
 {
@@ -78,6 +93,8 @@ The API and worker must use the same MySQL and Redis configuration.
 ```
 
 Poll generation progress with `GET /api/canvas-generations/:canvasGenerationId`. Retrieve the completed hypotheses with `GET /api/canvas-generations/:canvasGenerationId/entries`.
+
+Poll enhancement progress with `GET /api/business-ideas/:businessIdeaId`. Enhancement status changes from `PENDING` to `PROCESSING`, then `COMPLETED` or `FAILED`. On its final failure, `failureMessage` is `The AI enhancement could not be completed`. Canvas-generation status follows the same pattern, and its resource exposes `failureMessage` on a final failure.
 
 ## Reliability rules
 
@@ -98,6 +115,9 @@ Poll generation progress with `GET /api/canvas-generations/:canvasGenerationId`.
 - Added tests for outbox publication, queued generation persistence, retry status, and idempotent completion.
 - Added a dedicated queue and worker for business-idea enhancement.
 - Added migration `006_normalize_business_idea_enhancement_status.sql` so previously unenhanced ideas start as `NOT_REQUESTED`.
+- Added `POST /api/business-ideas/enhance` to create and queue an idea enhancement in one request.
+- Added migration `007_add_background_task_failure_messages.sql` and safe final-failure messages for both task types.
+- Added worker lifecycle logs for request/worker terminal monitoring.
 
 ## Verification performed
 
