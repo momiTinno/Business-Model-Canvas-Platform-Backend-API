@@ -70,7 +70,7 @@ Run the queue worker in a second terminal:
 npm run worker:dev
 ```
 
-This terminal logs structured `processing`, `completed`, and `failed` lifecycle events for both `business-idea-enhancement` and `canvas-generation` jobs.
+This terminal logs structured `processing`, `completed`, and `failed` lifecycle events for both `business-idea-enhancement` and `canvas-generation` jobs. Every event includes an ISO UTC `occurredAt` timestamp.
 
 The API and worker must use the same MySQL and Redis configuration.
 

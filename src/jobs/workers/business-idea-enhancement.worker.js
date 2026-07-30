@@ -20,6 +20,7 @@ export class BusinessIdeaEnhancementWorker {
       console.info({
         task: "business-idea-enhancement",
         event: "processing",
+        occurredAt: new Date().toISOString(),
         businessIdeaId: job.data.businessIdeaId,
         jobId: job.id,
       });
@@ -28,6 +29,7 @@ export class BusinessIdeaEnhancementWorker {
       console.info({
         task: "business-idea-enhancement",
         event: "completed",
+        occurredAt: new Date().toISOString(),
         businessIdeaId: job.data.businessIdeaId,
         jobId: job.id,
       });
@@ -36,6 +38,7 @@ export class BusinessIdeaEnhancementWorker {
       console.error({
         task: "business-idea-enhancement",
         event: "failed",
+        occurredAt: new Date().toISOString(),
         businessIdeaId: job?.data.businessIdeaId,
         jobId: job?.id,
         code: error?.code ?? "AI_ENHANCEMENT_FAILED",

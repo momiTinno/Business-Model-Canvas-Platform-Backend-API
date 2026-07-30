@@ -19,6 +19,7 @@ export class CanvasGenerationWorker {
       console.info({
         task: "canvas-generation",
         event: "processing",
+        occurredAt: new Date().toISOString(),
         canvasGenerationId: job.data.generationId,
         jobId: job.id,
       });
@@ -27,6 +28,7 @@ export class CanvasGenerationWorker {
       console.info({
         task: "canvas-generation",
         event: "completed",
+        occurredAt: new Date().toISOString(),
         canvasGenerationId: job.data.generationId,
         jobId: job.id,
       });
@@ -35,6 +37,7 @@ export class CanvasGenerationWorker {
       console.error({
         task: "canvas-generation",
         event: "failed",
+        occurredAt: new Date().toISOString(),
         canvasGenerationId: job?.data.generationId,
         jobId: job?.id,
         code: error?.code ?? "CANVAS_GENERATION_FAILED",
