@@ -19,6 +19,23 @@ export class BusinessIdeaController {
       next(error);
     }
   };
+  createAndEnhanceBusinessIdea = async (req, res, next) => {
+    try {
+      const enhancement =
+        await this.businessIdeaService.createAndRequestBusinessIdeaEnhancement({
+          userId: req.user.id,
+          ...req.validatedBody,
+          correlationId: req.correlationId,
+        });
+      await this.publishOutboxEvents(req);
+      res.status(HTTP_STATUS.ACCEPTED).json({
+        success: true,
+        data: enhancement,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
   listBusinessIdeas = async (req, res, next) => {
     try {
       const page = Math.max(Number(req.query.page) || 1, 1);
@@ -65,20 +82,23 @@ export class BusinessIdeaController {
           userId: req.user.id,
           correlationId: req.correlationId,
         });
-      try {
-        await this.outboxPublisherService.publishPendingEvents();
-      } catch (error) {
-        console.error("Business idea enhancement outbox publish failed", {
-          code: error.code ?? "OUTBOX_PUBLISH_FAILED",
-          correlationId: req.correlationId,
-        });
-      }
+      await this.publishOutboxEvents(req);
       res.status(HTTP_STATUS.ACCEPTED).json({
         success: true,
         data: enhancement,
       });
     } catch (error) {
       next(error);
+    }
+  };
+  publishOutboxEvents = async (req) => {
+    try {
+      await this.outboxPublisherService.publishPendingEvents();
+    } catch (error) {
+      console.error("Business idea enhancement outbox publish failed", {
+        code: error.code ?? "OUTBOX_PUBLISH_FAILED",
+        correlationId: req.correlationId,
+      });
     }
   };
 }

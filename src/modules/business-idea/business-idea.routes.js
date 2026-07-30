@@ -7,6 +7,11 @@ export const businessIdeaRouter = Router();
 const businessIdeaController = new BusinessIdeaController();
 businessIdeaRouter.use(authenticationMiddleware.authenticate);
 businessIdeaRouter.post(
+  "/enhance",
+  businessIdeaMiddleware.validateCreate,
+  businessIdeaController.createAndEnhanceBusinessIdea,
+);
+businessIdeaRouter.post(
   "/",
   businessIdeaMiddleware.validateCreate,
   businessIdeaController.createBusinessIdea,

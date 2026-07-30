@@ -17,11 +17,11 @@ export class BusinessIdeaEnhancementJobService {
         404,
         "BUSINESS_IDEA_NOT_FOUND",
       );
-    if (idea.generation_status === "COMPLETED") return;
+    if (idea.generationStatus === "COMPLETED") return;
     if (!(await this.businessIdeaDbService.claimEnhancement(businessIdeaId)))
       return;
     const aiEnhancedIdea = await this.businessIdeaAiService.enhance(
-      idea.original_idea,
+      idea.originalIdea,
     );
     await this.businessIdeaDbService.updateEnhancement({
       id: businessIdeaId,
@@ -35,6 +35,9 @@ export class BusinessIdeaEnhancementJobService {
     await this.businessIdeaDbService.recordEnhancementJobFailure({
       id: businessIdeaId,
       status: finalAttempt ? "FAILED" : "PENDING",
+      failureMessage: finalAttempt
+        ? "The AI enhancement could not be completed"
+        : null,
     });
   };
 }

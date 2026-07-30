@@ -15,10 +15,17 @@ export class BusinessIdeaDbService {
   constructor() {
     this.dbExecutor = mysqlExecutor.execute;
   }
-  createBusinessIdea = async ({ id, userId, canvasId, originalIdea }) => {
+  createBusinessIdea = async ({
+    connection = null,
+    id,
+    userId,
+    canvasId,
+    originalIdea,
+  }) => {
     await this.dbExecutor({
       query: CREATE_BUSINESS_IDEA,
       parameters: [id, userId, canvasId, originalIdea, userId, userId],
+      connection,
     });
   };
   findBusinessIdeasByUser = async (userId, limit, offset) => {
@@ -78,10 +85,14 @@ export class BusinessIdeaDbService {
     return result.affectedRows === 1;
   };
 
-  recordEnhancementJobFailure = async ({ id, status }) => {
+  recordEnhancementJobFailure = async ({
+    id,
+    status,
+    failureMessage = null,
+  }) => {
     await this.dbExecutor({
       query: RECORD_ENHANCEMENT_JOB_FAILURE,
-      parameters: [status, id],
+      parameters: [status, failureMessage, id],
     });
   };
 

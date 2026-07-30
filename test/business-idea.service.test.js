@@ -32,6 +32,38 @@ test("queues a business idea enhancement through the transactional outbox", asyn
   });
 });
 
+test("creates and queues a business idea enhancement in one transaction", async () => {
+  const service = new BusinessIdeaService();
+  let createdIdea;
+  let outboxEvent;
+  service.canvasService = { getCanvasTypeById: async () => ({ id: "canvas" }) };
+  service.businessIdeaDbService = {
+    createBusinessIdea: async (payload) => {
+      createdIdea = payload;
+    },
+    requestEnhancement: async () => true,
+  };
+  service.outboxEventDbService = {
+    createEvent: async (event) => {
+      outboxEvent = event;
+    },
+  };
+  service.mysqlTransaction = { run: async (callback) => callback({}) };
+  const result = await service.createAndRequestBusinessIdeaEnhancement({
+    userId: "user-id",
+    canvasTypeId: "canvas-id",
+    businessIdea: "A home-repair marketplace",
+    correlationId: "request-id",
+  });
+  assert.equal(result.generationStatus, "PENDING");
+  assert.equal(createdIdea.id, result.id);
+  assert.equal(createdIdea.originalIdea, "A home-repair marketplace");
+  assert.deepEqual(outboxEvent.payload, {
+    businessIdeaId: result.id,
+    correlationId: "request-id",
+  });
+});
+
 test("lists only the current user's paginated ideas", async () => {
   const service = new BusinessIdeaService();
   service.businessIdeaDbService = {

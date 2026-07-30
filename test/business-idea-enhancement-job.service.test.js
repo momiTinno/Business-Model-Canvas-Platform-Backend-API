@@ -6,8 +6,8 @@ import { BusinessIdeaEnhancementJobService } from "../src/modules/business-idea/
 const idea = {
   id: "idea-id",
   user_id: "user-id",
-  original_idea: "A trusted home-repair marketplace",
-  generation_status: "PENDING",
+  originalIdea: "A trusted home-repair marketplace",
+  generationStatus: "PENDING",
 };
 
 const serviceFor = () => {
@@ -43,7 +43,7 @@ test("worker does not repeat an already completed enhancement", async () => {
   const service = serviceFor();
   service.businessIdeaDbService.findBusinessIdeaById = async () => ({
     ...idea,
-    generation_status: "COMPLETED",
+    generationStatus: "COMPLETED",
   });
   let claimed = false;
   service.businessIdeaDbService.claimEnhancement = async () => {
@@ -51,4 +51,20 @@ test("worker does not repeat an already completed enhancement", async () => {
   };
   await service.process({ businessIdeaId: idea.id });
   assert.equal(claimed, false);
+});
+
+test("stores a safe message after the final failed enhancement attempt", async () => {
+  const service = serviceFor();
+  let failure;
+  service.businessIdeaDbService.recordEnhancementJobFailure = async (
+    payload,
+  ) => {
+    failure = payload;
+  };
+  await service.recordFailure({ businessIdeaId: idea.id, finalAttempt: true });
+  assert.deepEqual(failure, {
+    id: "idea-id",
+    status: "FAILED",
+    failureMessage: "The AI enhancement could not be completed",
+  });
 });

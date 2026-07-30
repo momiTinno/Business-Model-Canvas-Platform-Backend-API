@@ -33,6 +33,45 @@ export class BusinessIdeaService {
       generationStatus: "NOT_REQUESTED",
     };
   };
+
+  createAndRequestBusinessIdeaEnhancement = async ({
+    userId,
+    canvasTypeId,
+    businessIdea,
+    correlationId = null,
+  }) => {
+    if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))
+      throw new AppError("Canvas type not found", 400, "CANVAS_TYPE_NOT_FOUND");
+    const id = generate();
+    await this.mysqlTransaction.run(async (connection) => {
+      await this.businessIdeaDbService.createBusinessIdea({
+        connection,
+        id,
+        userId,
+        canvasId: canvasTypeId,
+        originalIdea: businessIdea,
+      });
+      await this.businessIdeaDbService.requestEnhancement({
+        connection,
+        id,
+        userId,
+      });
+      await this.outboxEventDbService.createEvent({
+        connection,
+        id: generate(),
+        eventType: "BUSINESS_IDEA_ENHANCEMENT_REQUESTED",
+        payload: { businessIdeaId: id, correlationId },
+      });
+    });
+    return {
+      id,
+      canvasTypeId,
+      originalIdea: businessIdea,
+      aiEnhancedIdea: null,
+      generationStatus: "PENDING",
+      failureMessage: null,
+    };
+  };
   listBusinessIdeas = async ({ userId, page, limit }) => {
     const [items, total] = await Promise.all([
       this.businessIdeaDbService.findBusinessIdeasByUser(
