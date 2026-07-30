@@ -51,6 +51,7 @@ Apply all background-task migrations in order:
 mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/005_create_outbox_events.sql
 mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/006_normalize_business_idea_enhancement_status.sql
 mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/007_add_background_task_failure_messages.sql
+mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/008_create_background_task_status_history.sql
 ```
 
 ## Local operation
@@ -101,6 +102,19 @@ Every queued operation returns `202 Accepted`:
 Poll generation progress with `GET /api/canvas-generations/:canvasGenerationId`. Retrieve the completed hypotheses with `GET /api/canvas-generations/:canvasGenerationId/entries`.
 
 Poll enhancement progress with `GET /api/business-ideas/:businessIdeaId`. Enhancement status changes from `PENDING` to `PROCESSING`, then `COMPLETED` or `FAILED`. On its final failure, `failureMessage` is `The AI enhancement could not be completed`. Canvas-generation status follows the same pattern, and its resource exposes `failureMessage` on a final failure.
+
+Both detail responses include `statusTimeline`, an ordered audit trail with the exact recorded timestamp for each transition:
+
+```json
+{
+  "generationStatus": "COMPLETED",
+  "statusTimeline": [
+    { "status": "PENDING", "occurredAt": "2026-07-30T10:00:00.000Z" },
+    { "status": "PROCESSING", "occurredAt": "2026-07-30T10:00:01.105Z" },
+    { "status": "COMPLETED", "occurredAt": "2026-07-30T10:00:08.721Z" }
+  ]
+}
+```
 
 ## End-to-end workflow
 
@@ -197,6 +211,7 @@ Use two terminal windows during development:
 - Added `POST /api/business-ideas/enhance` to create and queue an idea enhancement in one request.
 - Added migration `007_add_background_task_failure_messages.sql` and safe final-failure messages for both task types.
 - Added worker lifecycle logs for request/worker terminal monitoring.
+- Added migration `008_create_background_task_status_history.sql` and `statusTimeline` timestamps for every background-task transition.
 
 ## Verification performed
 
