@@ -50,6 +50,9 @@ const serviceFor = () => {
     },
   };
   service.mysqlTransaction = { run: async (callback) => callback({}) };
+  service.backgroundTaskStatusHistoryDbService = {
+    recordStatus: async () => {},
+  };
   return { service, getPersistedEntries: () => persistedEntries };
 };
 
@@ -88,7 +91,8 @@ test("stores a safe message after the final failed canvas attempt", async () => 
     errorCode: "AI_PROVIDER_ERROR",
     finalAttempt: true,
   });
-  assert.deepEqual(failure, {
+  const { connection, ...failureWithoutConnection } = failure;
+  assert.deepEqual(failureWithoutConnection, {
     id: "generation-id",
     status: "FAILED",
     errorCode: "AI_PROVIDER_ERROR",

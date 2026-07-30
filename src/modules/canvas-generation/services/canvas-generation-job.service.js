@@ -5,6 +5,9 @@ import { EntryDbService } from "../../entry/services/entry-db.service.js";
 import { CanvasGenerationAiService } from "./canvas-generation-ai.service.js";
 import { CanvasGenerationDbService } from "./canvas-generation-db.service.js";
 import { CanvasGenerationValidatorService } from "./canvas-generation-validator.service.js";
+import { BackgroundTaskStatusHistoryDbService } from "../../../jobs/services/background-task-status-history-db.service.js";
+
+const CANVAS_GENERATION = "CANVAS_GENERATION";
 
 export class CanvasGenerationJobService {
   constructor() {
@@ -15,6 +18,8 @@ export class CanvasGenerationJobService {
       new CanvasGenerationValidatorService();
     this.entryDbService = new EntryDbService();
     this.mysqlTransaction = mysqlTransaction;
+    this.backgroundTaskStatusHistoryDbService =
+      new BackgroundTaskStatusHistoryDbService();
   }
 
   process = async ({ generationId }) => {
@@ -29,12 +34,23 @@ export class CanvasGenerationJobService {
         "CANVAS_GENERATION_NOT_FOUND",
       );
     if (generation.generationStatus === "COMPLETED") return;
-    if (
-      !(await this.canvasGenerationDbService.claimCanvasGeneration(
-        generationId,
-      ))
-    )
-      return;
+    const claimed = await this.mysqlTransaction.run(async (connection) => {
+      if (
+        !(await this.canvasGenerationDbService.claimCanvasGeneration({
+          connection,
+          id: generationId,
+        }))
+      )
+        return false;
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: CANVAS_GENERATION,
+        resourceId: generationId,
+        status: "PROCESSING",
+      });
+      return true;
+    });
+    if (!claimed) return;
     const categories = await this.canvasService.getCategoriesForCanvas(
       generation.canvasTypeId,
     );
@@ -63,17 +79,33 @@ export class CanvasGenerationJobService {
         userId: generation.createdBy,
         status: "COMPLETED",
       });
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: CANVAS_GENERATION,
+        resourceId: generationId,
+        status: "COMPLETED",
+      });
     });
   };
 
   recordFailure = async ({ generationId, errorCode, finalAttempt }) => {
-    await this.canvasGenerationDbService.recordJobFailure({
-      id: generationId,
-      status: finalAttempt ? "FAILED" : "PENDING",
-      errorCode,
-      failureMessage: finalAttempt
-        ? "The canvas generation could not be completed"
-        : null,
+    const status = finalAttempt ? "FAILED" : "PENDING";
+    await this.mysqlTransaction.run(async (connection) => {
+      await this.canvasGenerationDbService.recordJobFailure({
+        connection,
+        id: generationId,
+        status,
+        errorCode,
+        failureMessage: finalAttempt
+          ? "The canvas generation could not be completed"
+          : null,
+      });
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: CANVAS_GENERATION,
+        resourceId: generationId,
+        status,
+      });
     });
   };
 }

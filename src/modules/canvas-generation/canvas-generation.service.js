@@ -7,6 +7,9 @@ import { CanvasGenerationDbService } from "./services/canvas-generation-db.servi
 import { CanvasGenerationValidatorService } from "./services/canvas-generation-validator.service.js";
 import { generate } from "../../utils/uuid.util.js";
 import { OutboxEventDbService } from "../../jobs/services/outbox-event-db.service.js";
+import { BackgroundTaskStatusHistoryDbService } from "../../jobs/services/background-task-status-history-db.service.js";
+
+const CANVAS_GENERATION = "CANVAS_GENERATION";
 
 export class CanvasGenerationService {
   constructor() {
@@ -18,6 +21,8 @@ export class CanvasGenerationService {
     this.entryDbService = new EntryDbService();
     this.outboxEventDbService = new OutboxEventDbService();
     this.mysqlTransaction = mysqlTransaction;
+    this.backgroundTaskStatusHistoryDbService =
+      new BackgroundTaskStatusHistoryDbService();
   }
 
   requestCanvasGeneration = async ({ idea, userId, correlationId = null }) => {
@@ -54,6 +59,12 @@ export class CanvasGenerationService {
         idea,
         userId,
       });
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: CANVAS_GENERATION,
+        resourceId: generationId,
+        status: "PENDING",
+      });
       await this.outboxEventDbService.createEvent({
         connection,
         id: generate(),
@@ -84,6 +95,12 @@ export class CanvasGenerationService {
       );
     return generation;
   };
+
+  getStatusTimeline = async (canvasGenerationId) =>
+    this.backgroundTaskStatusHistoryDbService.findStatusTimeline({
+      taskType: CANVAS_GENERATION,
+      resourceId: canvasGenerationId,
+    });
 
   getGroupedEntries = async (canvasGenerationId, canvasTypeId) => {
     const rows =

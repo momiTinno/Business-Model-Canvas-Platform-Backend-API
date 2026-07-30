@@ -26,6 +26,9 @@ const serviceFor = () => {
       outboxEvent = event;
     },
   };
+  service.backgroundTaskStatusHistoryDbService = {
+    recordStatus: async () => {},
+  };
   service.mysqlTransaction = { run: async (callback) => callback({}) };
   return { service, getOutboxEvent: () => outboxEvent };
 };

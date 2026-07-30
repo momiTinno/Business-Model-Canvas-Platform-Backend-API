@@ -13,6 +13,9 @@ test("queues a business idea enhancement through the transactional outbox", asyn
       outboxEvent = event;
     },
   };
+  service.backgroundTaskStatusHistoryDbService = {
+    recordStatus: async () => {},
+  };
   service.mysqlTransaction = { run: async (callback) => callback({}) };
   const result = await service.requestBusinessIdeaEnhancement({
     idea: {
@@ -47,6 +50,9 @@ test("creates and queues a business idea enhancement in one transaction", async 
     createEvent: async (event) => {
       outboxEvent = event;
     },
+  };
+  service.backgroundTaskStatusHistoryDbService = {
+    recordStatus: async () => {},
   };
   service.mysqlTransaction = { run: async (callback) => callback({}) };
   const result = await service.createAndRequestBusinessIdeaEnhancement({

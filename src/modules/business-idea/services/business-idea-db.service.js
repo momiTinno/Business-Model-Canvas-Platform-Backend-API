@@ -77,15 +77,17 @@ export class BusinessIdeaDbService {
     return result.affectedRows === 1;
   };
 
-  claimEnhancement = async (id) => {
+  claimEnhancement = async ({ connection = null, id }) => {
     const [result] = await this.dbExecutor({
       query: CLAIM_ENHANCEMENT,
       parameters: [id],
+      connection,
     });
     return result.affectedRows === 1;
   };
 
   recordEnhancementJobFailure = async ({
+    connection = null,
     id,
     status,
     failureMessage = null,
@@ -93,6 +95,7 @@ export class BusinessIdeaDbService {
     await this.dbExecutor({
       query: RECORD_ENHANCEMENT_JOB_FAILURE,
       parameters: [status, failureMessage, id],
+      connection,
     });
   };
 

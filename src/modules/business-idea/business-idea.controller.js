@@ -55,7 +55,16 @@ export class BusinessIdeaController {
   getBusinessIdea = async (req, res, next) => {
     try {
       const { user_id, ...idea } = req.businessIdea;
-      res.status(HTTP_STATUS.OK).json({ success: true, data: idea });
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: {
+          ...idea,
+          statusTimeline:
+            await this.businessIdeaService.getEnhancementStatusTimeline(
+              idea.id,
+            ),
+        },
+      });
     } catch (error) {
       next(error);
     }

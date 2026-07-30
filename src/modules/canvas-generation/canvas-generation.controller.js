@@ -37,7 +37,12 @@ export class CanvasGenerationController {
     try {
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data: req.canvasGeneration,
+        data: {
+          ...req.canvasGeneration,
+          statusTimeline: await this.canvasGenerationService.getStatusTimeline(
+            req.canvasGeneration.id,
+          ),
+        },
       });
     } catch (error) {
       next(error);

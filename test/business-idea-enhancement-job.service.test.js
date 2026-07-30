@@ -21,6 +21,10 @@ const serviceFor = () => {
   service.businessIdeaAiService = {
     enhance: async () => "An enhanced home-repair marketplace idea",
   };
+  service.backgroundTaskStatusHistoryDbService = {
+    recordStatus: async () => {},
+  };
+  service.mysqlTransaction = { run: async (callback) => callback({}) };
   return service;
 };
 
@@ -31,7 +35,8 @@ test("worker persists a completed business idea enhancement", async () => {
     update = payload;
   };
   await service.process({ businessIdeaId: idea.id });
-  assert.deepEqual(update, {
+  const { connection, ...updateWithoutConnection } = update;
+  assert.deepEqual(updateWithoutConnection, {
     id: "idea-id",
     userId: "user-id",
     enhancedIdea: "An enhanced home-repair marketplace idea",
@@ -62,7 +67,8 @@ test("stores a safe message after the final failed enhancement attempt", async (
     failure = payload;
   };
   await service.recordFailure({ businessIdeaId: idea.id, finalAttempt: true });
-  assert.deepEqual(failure, {
+  const { connection, ...failureWithoutConnection } = failure;
+  assert.deepEqual(failureWithoutConnection, {
     id: "idea-id",
     status: "FAILED",
     failureMessage: "The AI enhancement could not be completed",

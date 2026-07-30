@@ -6,6 +6,9 @@ import { BusinessIdeaDbService } from "./services/business-idea-db.service.js";
 import { BusinessIdeaAiService } from "./services/business-idea-ai.service.js";
 import { OutboxEventDbService } from "../../jobs/services/outbox-event-db.service.js";
 import { mysqlTransaction } from "../../db/mysql/transaction.js";
+import { BackgroundTaskStatusHistoryDbService } from "../../jobs/services/background-task-status-history-db.service.js";
+
+const BUSINESS_IDEA_ENHANCEMENT = "BUSINESS_IDEA_ENHANCEMENT";
 export class BusinessIdeaService {
   constructor() {
     this.businessIdeaDbService = new BusinessIdeaDbService();
@@ -14,16 +17,27 @@ export class BusinessIdeaService {
     this.canvasGenerationDbService = new CanvasGenerationDbService();
     this.outboxEventDbService = new OutboxEventDbService();
     this.mysqlTransaction = mysqlTransaction;
+    this.backgroundTaskStatusHistoryDbService =
+      new BackgroundTaskStatusHistoryDbService();
   }
   createBusinessIdea = async ({ userId, canvasTypeId, businessIdea }) => {
     if (!(await this.canvasService.getCanvasTypeById(canvasTypeId)))
       throw new AppError("Canvas type not found", 400, "CANVAS_TYPE_NOT_FOUND");
     const id = generate();
-    await this.businessIdeaDbService.createBusinessIdea({
-      id,
-      userId,
-      canvasId: canvasTypeId,
-      originalIdea: businessIdea,
+    await this.mysqlTransaction.run(async (connection) => {
+      await this.businessIdeaDbService.createBusinessIdea({
+        connection,
+        id,
+        userId,
+        canvasId: canvasTypeId,
+        originalIdea: businessIdea,
+      });
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: BUSINESS_IDEA_ENHANCEMENT,
+        resourceId: id,
+        status: "NOT_REQUESTED",
+      });
     });
     return {
       id,
@@ -55,6 +69,12 @@ export class BusinessIdeaService {
         connection,
         id,
         userId,
+      });
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: BUSINESS_IDEA_ENHANCEMENT,
+        resourceId: id,
+        status: "PENDING",
       });
       await this.outboxEventDbService.createEvent({
         connection,
@@ -149,6 +169,12 @@ export class BusinessIdeaService {
           409,
           "ENHANCEMENT_IN_PROGRESS",
         );
+      await this.backgroundTaskStatusHistoryDbService.recordStatus({
+        connection,
+        taskType: BUSINESS_IDEA_ENHANCEMENT,
+        resourceId: idea.id,
+        status: "PENDING",
+      });
       await this.outboxEventDbService.createEvent({
         connection,
         id: generate(),
@@ -163,4 +189,10 @@ export class BusinessIdeaService {
       generationStatus: "PENDING",
     };
   };
+
+  getEnhancementStatusTimeline = async (businessIdeaId) =>
+    this.backgroundTaskStatusHistoryDbService.findStatusTimeline({
+      taskType: BUSINESS_IDEA_ENHANCEMENT,
+      resourceId: businessIdeaId,
+    });
 }

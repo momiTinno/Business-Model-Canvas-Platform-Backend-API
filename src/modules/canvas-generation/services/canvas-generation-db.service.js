@@ -54,15 +54,17 @@ export class CanvasGenerationDbService {
     return rows[0] ?? null;
   };
 
-  claimCanvasGeneration = async (id) => {
+  claimCanvasGeneration = async ({ connection = null, id }) => {
     const [result] = await this.dbExecutor({
       query: CLAIM_CANVAS_GENERATION,
       parameters: [id],
+      connection,
     });
     return result.affectedRows === 1;
   };
 
   recordJobFailure = async ({
+    connection = null,
     id,
     status,
     errorCode,
@@ -71,6 +73,7 @@ export class CanvasGenerationDbService {
     await this.dbExecutor({
       query: RECORD_CANVAS_GENERATION_JOB_FAILURE,
       parameters: [status, errorCode, failureMessage, id],
+      connection,
     });
   };
 
