@@ -61,6 +61,7 @@ export class CanvasGenerationJobService {
       canvasType: canvasType.name,
       categoryNamesStr: categories.map((category) => category.name).join(", "),
       description: generation.selectedIdea,
+      taskContext: { canvasGenerationId: generationId },
     });
     const entries = this.canvasGenerationValidatorService.validate({
       content,

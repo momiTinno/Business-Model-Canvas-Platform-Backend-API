@@ -43,6 +43,7 @@ QUEUE_CANVAS_GENERATION_CONCURRENCY=2
 QUEUE_BUSINESS_IDEA_ENHANCEMENT_CONCURRENCY=2
 QUEUE_JOB_ATTEMPTS=3
 QUEUE_BACKOFF_MS=5000
+AI_DEBUG_LOGGING=false
 ```
 
 Apply all background-task migrations in order:
@@ -71,6 +72,14 @@ npm run worker:dev
 ```
 
 This terminal logs structured `processing`, `completed`, and `failed` lifecycle events for both `business-idea-enhancement` and `canvas-generation` jobs. Every event includes an ISO UTC `occurredAt` timestamp.
+
+To view the complete Portkey request variables and SDK response JSON in the worker terminal during local debugging, set the following local-only value and restart the worker:
+
+```env
+AI_DEBUG_LOGGING=true
+```
+
+The log includes the task, resource ID, prompt ID, variables sent to Portkey, and the full serializable response object. Do not enable it in production because it logs user-provided business ideas. API keys, JWTs, and request headers are never logged.
 
 The API and worker must use the same MySQL and Redis configuration.
 

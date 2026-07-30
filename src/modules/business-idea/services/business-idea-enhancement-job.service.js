@@ -44,6 +44,7 @@ export class BusinessIdeaEnhancementJobService {
     if (!claimed) return;
     const aiEnhancedIdea = await this.businessIdeaAiService.enhance(
       idea.originalIdea,
+      { businessIdeaId },
     );
     await this.mysqlTransaction.run(async (connection) => {
       await this.businessIdeaDbService.updateEnhancement({
