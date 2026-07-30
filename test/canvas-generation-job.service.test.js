@@ -76,3 +76,22 @@ test("does not repeat an already completed generation", async () => {
   await service.process({ generationId: generation.id });
   assert.equal(getPersistedEntries(), undefined);
 });
+
+test("stores a safe message after the final failed canvas attempt", async () => {
+  const { service } = serviceFor();
+  let failure;
+  service.canvasGenerationDbService.recordJobFailure = async (payload) => {
+    failure = payload;
+  };
+  await service.recordFailure({
+    generationId: generation.id,
+    errorCode: "AI_PROVIDER_ERROR",
+    finalAttempt: true,
+  });
+  assert.deepEqual(failure, {
+    id: "generation-id",
+    status: "FAILED",
+    errorCode: "AI_PROVIDER_ERROR",
+    failureMessage: "The canvas generation could not be completed",
+  });
+});

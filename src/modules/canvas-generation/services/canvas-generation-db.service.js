@@ -62,10 +62,15 @@ export class CanvasGenerationDbService {
     return result.affectedRows === 1;
   };
 
-  recordJobFailure = async ({ id, status, errorCode }) => {
+  recordJobFailure = async ({
+    id,
+    status,
+    errorCode,
+    failureMessage = null,
+  }) => {
     await this.dbExecutor({
       query: RECORD_CANVAS_GENERATION_JOB_FAILURE,
-      parameters: [status, errorCode, id],
+      parameters: [status, errorCode, failureMessage, id],
     });
   };
 
@@ -75,10 +80,11 @@ export class CanvasGenerationDbService {
     userId,
     status,
     errorCode = null,
+    failureMessage = null,
   }) => {
     await this.dbExecutor({
       query: UPDATE_CANVAS_GENERATION_STATUS,
-      parameters: [status, errorCode, userId, id],
+      parameters: [status, errorCode, failureMessage, userId, id],
       connection,
     });
   };

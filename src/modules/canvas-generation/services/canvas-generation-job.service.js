@@ -71,6 +71,9 @@ export class CanvasGenerationJobService {
       id: generationId,
       status: finalAttempt ? "FAILED" : "PENDING",
       errorCode,
+      failureMessage: finalAttempt
+        ? "The canvas generation could not be completed"
+        : null,
     });
   };
 }
