@@ -15,6 +15,35 @@ export class CanvasGenerationWorker {
         concurrency: queueConfig.canvasGeneration.concurrency,
       },
     );
+    this.worker.on("active", (job) => {
+      console.info({
+        task: "canvas-generation",
+        event: "processing",
+        canvasGenerationId: job.data.generationId,
+        jobId: job.id,
+      });
+    });
+    this.worker.on("completed", (job) => {
+      console.info({
+        task: "canvas-generation",
+        event: "completed",
+        canvasGenerationId: job.data.generationId,
+        jobId: job.id,
+      });
+    });
+    this.worker.on("failed", (job, error) => {
+      console.error({
+        task: "canvas-generation",
+        event: "failed",
+        canvasGenerationId: job?.data.generationId,
+        jobId: job?.id,
+        code: error?.code ?? "CANVAS_GENERATION_FAILED",
+        finalAttempt:
+          job &&
+          job.attemptsMade >=
+            (job.opts.attempts ?? queueConfig.canvasGeneration.attempts),
+      });
+    });
   }
 
   async processJob(job) {

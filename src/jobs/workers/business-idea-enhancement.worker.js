@@ -16,6 +16,35 @@ export class BusinessIdeaEnhancementWorker {
         concurrency: queueConfig.businessIdeaEnhancement.concurrency,
       },
     );
+    this.worker.on("active", (job) => {
+      console.info({
+        task: "business-idea-enhancement",
+        event: "processing",
+        businessIdeaId: job.data.businessIdeaId,
+        jobId: job.id,
+      });
+    });
+    this.worker.on("completed", (job) => {
+      console.info({
+        task: "business-idea-enhancement",
+        event: "completed",
+        businessIdeaId: job.data.businessIdeaId,
+        jobId: job.id,
+      });
+    });
+    this.worker.on("failed", (job, error) => {
+      console.error({
+        task: "business-idea-enhancement",
+        event: "failed",
+        businessIdeaId: job?.data.businessIdeaId,
+        jobId: job?.id,
+        code: error?.code ?? "AI_ENHANCEMENT_FAILED",
+        finalAttempt:
+          job &&
+          job.attemptsMade >=
+            (job.opts.attempts ?? queueConfig.businessIdeaEnhancement.attempts),
+      });
+    });
   }
 
   async processJob(job) {
