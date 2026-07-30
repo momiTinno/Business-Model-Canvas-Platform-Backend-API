@@ -45,7 +45,13 @@ QUEUE_JOB_ATTEMPTS=3
 QUEUE_BACKOFF_MS=5000
 ```
 
-Apply migration `src/db/mysql/migration/005_create_outbox_events.sql` using the same migration procedure used for the existing schema.
+Apply all background-task migrations in order:
+
+```bash
+mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/005_create_outbox_events.sql
+mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/006_normalize_business_idea_enhancement_status.sql
+mysql -u bmc_user -p bmc_platform < src/db/mysql/migration/007_add_background_task_failure_messages.sql
+```
 
 ## Local operation
 
@@ -95,6 +101,79 @@ Every queued operation returns `202 Accepted`:
 Poll generation progress with `GET /api/canvas-generations/:canvasGenerationId`. Retrieve the completed hypotheses with `GET /api/canvas-generations/:canvasGenerationId/entries`.
 
 Poll enhancement progress with `GET /api/business-ideas/:businessIdeaId`. Enhancement status changes from `PENDING` to `PROCESSING`, then `COMPLETED` or `FAILED`. On its final failure, `failureMessage` is `The AI enhancement could not be completed`. Canvas-generation status follows the same pattern, and its resource exposes `failureMessage` on a final failure.
+
+## End-to-end workflow
+
+### 1. Create and enhance an idea
+
+```http
+POST /api/business-ideas/enhance
+```
+
+```json
+{
+  "canvasTypeId": "canvas-type-uuid",
+  "businessIdea": "A detailed description of the business idea."
+}
+```
+
+The API validates the request, stores `original_idea`, marks the record `PENDING`, stores an outbox event, and returns `202 Accepted` immediately.
+
+### 2. Inspect enhancement status
+
+```http
+GET /api/business-ideas/:businessIdeaId
+```
+
+Successful status progression:
+
+```text
+PENDING -> PROCESSING -> COMPLETED
+```
+
+On completion, `aiEnhancedIdea` contains the Portkey output. A retry follows this pattern:
+
+```text
+PENDING -> PROCESSING -> PENDING
+```
+
+After the final configured retry, the record becomes `FAILED` and returns a safe `failureMessage`; internal provider details are not exposed through the API.
+
+### 3. Select an idea version
+
+```http
+PATCH /api/business-ideas/:businessIdeaId/select
+```
+
+```json
+{
+  "selectionType": "AI_ENHANCED"
+}
+```
+
+Use `ORIGINAL` to generate a canvas from the original text. The selected value is persisted as `selected_idea` and is the only idea text used for canvas generation.
+
+### 4. Queue and inspect a canvas generation
+
+```http
+POST /api/business-ideas/:businessIdeaId/canvas-generations
+```
+
+The API validates that a version is selected, creates `canvas_generations(PENDING)`, stores an outbox event, and returns `202 Accepted` with the canvas-generation ID.
+
+```http
+GET /api/canvas-generations/:canvasGenerationId
+GET /api/canvas-generations/:canvasGenerationId/entries
+```
+
+The worker changes the generation through `PENDING`, `PROCESSING`, and `COMPLETED`, validates the Portkey response, and persists all entries in one MySQL transaction. Only request `/entries` after the generation is `COMPLETED`.
+
+## Monitoring workflow
+
+Use two terminal windows during development:
+
+1. Run `npm run dev` in Terminal 1 and monitor incoming POST requests, response status, and correlation IDs.
+2. Run `npm run worker:dev` in Terminal 2 and monitor task lifecycle logs. A successful job emits `processing` then `completed`; a retry or final error emits `failed` with a safe error code and final-attempt flag.
 
 ## Reliability rules
 
